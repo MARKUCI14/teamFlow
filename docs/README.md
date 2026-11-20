@@ -18,8 +18,9 @@
 | [testing](development/testing.md) | Test strategy |
 | [rubric-checklist](development/rubric-checklist.md) | Grading rubric to implementation mapping |
 | **Guides** | |
-| [backend/guide](backend/guide.md) | Gradle layout, service template, messaging code |
-| [frontend/guide](frontend/guide.md) | React + TS, Module Federation, WebSockets |
+| [backend/guide](backend/guide.md) | Backend module map, file responsibilities, conventions, and links to service guides |
+| [backend/services/](backend/services/) | Per-service implementation/file guides for gateway, all microservices, and report function |
+| [frontend/guide](frontend/guide.md) | Frontend workspace, shell, shared package, and file responsibilities for every remote |
 | [deployment/compose](deployment/compose.md) | Docker Compose |
 | [deployment/kubernetes](deployment/kubernetes.md) | Kubernetes + OpenFaaS |
 | [api/rest-api](api/rest-api.md) | REST endpoint reference |

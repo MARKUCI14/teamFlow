@@ -1,84 +1,113 @@
-# Backend Guide
+# Backend Implementation Guide
 
-## Structure
-```
+This guide defines the planned backend layout and the job of each build, source, configuration, deployment, and test file. These are implementation conventions: create the files as the roadmap reaches each milestone. Service boundaries and ports are in the [service catalog](../architecture/services.md); detailed behavior is in each [service guide](services/).
+
+## Backend repository map
+
+```text
 backend/
-├── settings.gradle.kts           # includes all modules
-├── build.gradle.kts              # shared config
-├── gradle/libs.versions.toml     # version catalog (single source of versions)
-├── buildSrc/ (or build-logic/)   # convention plugins: java, spring-service, docker
-├── common/                       # events, commands, shared error + security config
-└── <service>/
-    ├── build.gradle.kts
-    ├── Dockerfile
-    └── src/{main,test}/...
+├── settings.gradle.kts              # Declares included Gradle projects.
+├── build.gradle.kts                 # Shared plugin versions and root tasks.
+├── gradle.properties                # Gradle/JVM build settings.
+├── gradlew, gradlew.bat              # Wrapper launchers; pin Gradle version.
+├── gradle/wrapper/gradle-wrapper.properties # Wrapper distribution/version.
+├── gradle/libs.versions.toml         # Central dependency and plugin versions.
+├── build-logic/                      # Reusable Gradle convention plugins.
+│   ├── build.gradle.kts              # Build logic plugin dependencies.
+│   └── src/main/kotlin/              # java-library, spring-service, spring-function plugins.
+├── common/                           # Shared contracts and technical support only.
+└── <service>/                        # One independent deployable Gradle application per service.
 ```
-Pin the Spring Boot and Spring Cloud versions in `libs.versions.toml` (use the latest stable pair compatible with each other; check the Spring Cloud release train compatibility table when upgrading).
 
-## Creating a new service (checklist)
-1. Add `include("<service>")` to `settings.gradle.kts`.
-2. Apply the `spring-service` convention plugin; add only needed starters.
-3. Package root `com.stocksim.<service>` with `api/application/domain/infrastructure`.
-4. `application.yml` + profile files `application-local.yml`, `-docker.yml`, `-k8s.yml`; all hosts/secrets from env vars.
-5. Flyway migration `V1__init.sql`, DB name `<service>db`.
-6. Security: resource server config from `common` (JWKS URL via env).
-7. Actuator health (`/actuator/health`), liveness/readiness probes, OpenAPI.
-8. `Dockerfile` (multi-stage, JRE 21, non-root user) and compose/K8s entries.
-9. Tests incl. Testcontainers; add to CI (automatic via `./gradlew build`).
-10. Update `docs/architecture/services.md`, C4, and API docs.
+### Root and shared module files
 
-## Key dependencies
-| Need | Dependency |
+| File or directory | Responsibility |
 |---|---|
-| REST | `spring-boot-starter-web`, `-validation`, springdoc-openapi |
-| Security | `spring-boot-starter-oauth2-resource-server`, `spring-boot-starter-security` |
-| Gateway | `spring-cloud-starter-gateway` (reactive) |
-| DB | `spring-boot-starter-data-jpa`, PostgreSQL driver, Flyway |
-| RabbitMQ | `spring-boot-starter-amqp` |
-| Kafka | `spring-kafka` |
-| Redis | `spring-boot-starter-data-redis` |
-| WebSocket | `spring-boot-starter-websocket` |
-| FaaS | `spring-cloud-function-web` (+ OpenPDF or Apache PDFBox for PDFs) |
-| Tests | `spring-boot-starter-test`, Testcontainers, Spring Security test |
-| Ops | `spring-boot-starter-actuator`, `micrometer-registry-prometheus` |
+| `settings.gradle.kts` | Gives the build its name and includes `common` and every service project. |
+| `build.gradle.kts` | Applies shared quality/build configuration and aggregates verification tasks; business dependencies belong in service build files. |
+| `gradle/libs.versions.toml` | Single place for pinned plugin/library versions and dependency aliases. |
+| `gradle.properties` | Sets Gradle memory, parallelism, and build cache options; contains no secrets. |
+| `build-logic/` | Holds convention plugins so service modules use consistent Java, Spring, test, and packaging configuration. |
+| `common/build.gradle.kts` | Declares only libraries required by shared contracts/utilities. |
+| `common/src/main/java/com/stocksim/common/messaging/Envelope.java` | Shared event envelope: id, type, schema version, timestamp, payload. |
+| `common/src/main/java/com/stocksim/common/messaging/event/` | Versioned event DTOs shared by producers and consumers. |
+| `common/src/main/java/com/stocksim/common/messaging/command/` | Versioned command DTOs shared by RabbitMQ publishers and consumers. |
+| `common/src/main/java/com/stocksim/common/security/` | Reusable JWT claim extraction and service security helpers; each app still declares its own access rules. |
+| `common/src/main/java/com/stocksim/common/web/` | Shared error response conventions and request correlation helpers; no domain logic. |
+| `common/src/test/` | Serialization/compatibility tests for shared payloads. |
 
-## Messaging code patterns
+Avoid turning `common` into a shared domain model or shared database layer. A service owns its entities and persistence model.
 
-**RabbitMQ publisher** (order-service)
-```java
-rabbitTemplate.convertAndSend("orders.exchange", "order.place", envelope(new PlaceOrderCommand(...)));
+## Standard Spring service layout
+
+Every normal service follows this pattern; its service-specific guide lists which adapters and files it needs.
+
+```text
+<service>/
+├── build.gradle.kts
+├── Dockerfile
+├── src/main/java/com/stocksim/<service>/
+│   ├── <Service>Application.java
+│   ├── api/
+│   ├── application/
+│   ├── domain/
+│   └── infrastructure/
+├── src/main/resources/
+│   ├── application.yml
+│   └── db/migration/V1__initial_schema.sql
+└── src/test/java/com/stocksim/<service>/
 ```
-**RabbitMQ consumer** (matching-service)
-```java
-@RabbitListener(queues = "orders.place")
-void onPlace(Envelope<PlaceOrderCommand> msg) { engine.handle(msg); }  // throw -> retry -> DLQ
-```
-**Kafka producer** (key = symbol / userId)
-```java
-kafkaTemplate.send("trades.executed", trade.userId().toString(), envelope(trade));
-```
-**Kafka consumer** (own group per service)
-```java
-@KafkaListener(topics = "trades.executed", groupId = "portfolio")
-void onTrade(Envelope<TradeExecuted> e) { service.apply(e); } // idempotent
-```
-**Serialization**: JSON (Jackson) with type headers disabled; use explicit target types and the shared `Envelope<T>` from `common`.
 
-## Notification-service (WebSocket + Redis) outline
-- STOMP endpoint `/ws`, application prefix `/app`, user destination prefix `/user`.
-- `ChannelInterceptor` validates the JWT on `CONNECT`.
-- `NotificationDispatcher.publish(userId, payload)` → `redisTemplate.convertAndSend("notifications", json)`.
-- `RedisMessageListener` on every instance → `simpMessagingTemplate.convertAndSendToUser(userId, "/queue/notifications", payload)`.
-- Inputs: Kafka listeners + RabbitMQ listener both call `publish(...)`.
+| File or directory | Responsibility |
+|---|---|
+| `<service>/build.gradle.kts` | Service-specific dependencies and test configuration; versions come from the catalog. |
+| `Dockerfile` | Builds a small, non-root runtime image for this service. |
+| `<Service>Application.java` | Spring Boot entry point and component-scan root. |
+| `api/` | HTTP controllers, request/response DTOs, validation, and service-specific exception mapping. Never return JPA entities. |
+| `application/` | Use cases, orchestration, transaction boundaries, and ports that the domain needs. |
+| `domain/` | Service-owned entities/value objects, invariants, and domain policies; keep framework dependencies out where practical. |
+| `infrastructure/` | JPA, broker, Redis, HTTP client, cryptography, and framework adapter implementations. |
+| `application.yml` | Safe defaults, server settings, actuator, serialization, and environment-variable placeholders. Profile-specific values come from environment, not committed secrets. |
+| `db/migration/V<n>__*.sql` | Forward-only Flyway schema change for this service's own database. |
+| `src/test/...` | Unit, slice, and integration tests mirroring production packages. |
 
-## Market data providers
-Expose one market-data provider interface to the rest of the system, with two implementations: a simulated provider and a real-data provider. Select the active provider through configuration/admin controls; publish normalized ticks to Kafka and cache the latest normalized price in Redis (`price:<symbol>`) whichever provider is active. The simulator uses a geometric random walk per symbol: `p(t+1) = p(t) * exp((mu - sigma²/2)dt + sigma * sqrt(dt) * Z)`. The real-data adapter maps the chosen external provider's quote/history responses to the same symbol and tick model. Keep API keys in environment configuration, document provider rate limits, and retain the simulator as the reliable offline/demo mode.
+Do not create profile files just to hold hostnames; configure Compose and Kubernetes through environment variables. Keep `application-local.yml` only for genuinely local behavior and never place credentials in it.
 
-## report-function
-Spring Cloud Function bean `report` (`Function<ReportRequest, byte[]>`). Request contains the portfolio snapshot (holdings, cash, P&L); output is the PDF. Packaged as a container; OpenFaaS template wraps it with `of-watchdog` (HTTP mode, port 8080).
+## Service guides
 
-## Configuration reference (env vars)
-`DB_URL`, `DB_USER`, `DB_PASSWORD`, `REDIS_HOST`, `RABBIT_HOST`, `RABBIT_USER`, `RABBIT_PASSWORD`, `KAFKA_BOOTSTRAP`, `JWKS_URI`, `INTERNAL_TOKEN`, `REPORT_FUNCTION_URL`, `SERVER_PORT`.
+| Guide | Main responsibilities |
+|---|---|
+| [API Gateway](services/api-gateway.md) | Public routing, JWT verification, throttling, CORS, and safe header handling. |
+| [User Service](services/user-service.md) | Registration, login, user profile, token signing, and public JWKS. |
+| [Market Data Service](services/market-data-service.md) | Symbols, simulated/real providers, normalized quotes, Kafka ticks, and Redis latest prices. |
+| [Order Service](services/order-service.md) | Authenticated order API, reservations, order state, RabbitMQ commands, and Kafka outcome events. |
+| [Matching Service](services/matching-service.md) | Order command handling, matching rules, persisted open orders, and trade/rejection events. |
+| [Portfolio Service](services/portfolio-service.md) | Funds/reservations, positions, P&L, report lifecycle, and report FaaS invocation. |
+| [Alert Service](services/alert-service.md) | User-owned price rules, tick evaluation, and notification commands. |
+| [Notification Service](services/notification-service.md) | JWT-authenticated STOMP connections, event conversion, and Redis cross-instance fan-out. |
+| [Report Function](services/report-function.md) | Stateless PDF generation function packaged for OpenFaaS and local Compose invocation. |
 
-## Observability
-Actuator health/metrics; propagate `X-Request-Id`; log it in every line (MDC). Optional Prometheus + Grafana in Compose profile `observability`.
+## Cross-cutting implementation rules
+
+- Services own their data and schema; other services call APIs or consume events.
+- Public APIs use DTO validation and RFC 7807 `ProblemDetail`; enforce ownership in the owning service.
+- Message consumers are idempotent and acknowledge only after durable work succeeds.
+- Configuration is supplied through environment variables; secrets use local ignored `.env` or Kubernetes Secrets.
+- Every service exposes health/readiness and OpenAPI where it serves REST.
+- Add tests in the same change as behavior; see [testing strategy](../development/testing.md).
+- Update the service catalog, REST reference, messaging contracts, diagrams, and deployment docs when a boundary or contract changes.
+
+## Dependency map
+
+| Capability | Typical library |
+|---|---|
+| REST + validation | Spring MVC, Jakarta Validation, springdoc |
+| JWT resource server | Spring Security OAuth2 Resource Server |
+| Persistence | Spring Data JPA, PostgreSQL driver, Flyway |
+| RabbitMQ / Kafka | Spring AMQP / Spring Kafka |
+| Redis | Spring Data Redis |
+| WebSocket | Spring WebSocket + STOMP |
+| FaaS handler | Spring Cloud Function Web |
+| Health and metrics | Spring Boot Actuator, Micrometer |
+
+Use only dependencies the service actually needs.
