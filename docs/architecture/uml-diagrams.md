@@ -74,6 +74,7 @@ sequenceDiagram
 
   T->>P: POST /api/portfolio/reports
   P-->>T: 202 {reportId, status: PENDING}
+  Note over P,F: Background report task invokes the FaaS after accepting the request
   P->>F: POST /function/report (portfolio snapshot JSON)
   F-->>P: 200 application/pdf
   P->>P: store report READY

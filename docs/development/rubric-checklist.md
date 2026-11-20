@@ -14,7 +14,9 @@ Grade = 80% S (system) + 20% P (tutorial). Items below are the ones listed in th
 | 8 | Containers for deployment | 1 | Dockerfile per service, Compose, Kubernetes manifests | `docker compose up`, `kubectl apply -k` | [ ] |
 | 9 | Documentation (UML, C4) | 1 | `docs/architecture/c4-model.md`, `uml-diagrams.md` | Rendered diagrams on GitHub | [ ] |
 
-The listed items add up to 9 points; confirm with the professor how the remaining point is awarded (e.g. base system functionality) and note it here.
+The listed system items add up to 9 points. Confirm with the professor how the system grade is totaled and whether any additional point or base-system component applies; update this checklist when clarified. Do not assume an extra criterion that is not in the assessment text.
+
+The full target system is tracked in the roadmap. For a manageable delivery order, first demonstrate the core journey (login → select simulated market → place order → update portfolio → receive notification), then complete remaining rubric capabilities and deployment evidence. The real-data market mode is an additional feature and should use the same normalized market-data contract as simulation.
 
 ## Tutorial (P, 20%)
 - [ ] ~3 pages on one topic implemented in the system (see [tutorial outline](../tutorial/outline.md))

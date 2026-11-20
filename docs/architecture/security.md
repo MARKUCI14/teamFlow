@@ -11,7 +11,7 @@
 
 ## Layers
 1. **nginx**: TLS termination (self-signed in dev), request size limits, only `/api`, `/ws`, `/` exposed.
-2. **api-gateway**: validates JWT, applies CORS, Redis-backed rate limiting, strips spoofable internal headers. Public routes: `/api/auth/**`, `/actuator/health`.
+2. **api-gateway**: validates JWT, applies CORS, Redis-backed rate limiting, strips spoofable internal headers. Public routes: `/api/auth/**`, `/.well-known/jwks.json`, and `/actuator/health`.
 3. **Each service** is also an OAuth2 resource server (validates the JWT again via JWKS), so a bypassed gateway is not a bypassed security model.
 4. **Internal endpoints** (`/internal/**`, e.g. fund reservation) are not routed by the gateway and require a service token (shared secret from env/K8s Secret for this project; production alternative is mTLS or a service-account JWT). Documented simplification.
 

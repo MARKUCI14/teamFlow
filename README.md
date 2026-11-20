@@ -1,6 +1,6 @@
 # StockSim
 
-Stock trading simulator built with a service-oriented architecture (Java Spring Boot microservices, RabbitMQ, Kafka, Redis, a FaaS report generator, and a React + TypeScript micro-frontend web app).
+Stock trading simulator built with a service-oriented architecture (Java Spring Boot microservices, RabbitMQ, Kafka, Redis, a FaaS report generator, and a React + TypeScript micro-frontend web app). Market prices can come from a simulated provider or a real-data provider; simulation remains available for offline demos.
 
 University project for *Arhitecturi orientate pe servicii* (UBB Cluj).
 

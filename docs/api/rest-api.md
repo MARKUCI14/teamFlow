@@ -13,6 +13,8 @@ All paths are public through the gateway under `/api`. All require a Bearer JWT 
 | GET | `/api/admin/users` | List users | ADMIN |
 | GET | `/.well-known/jwks.json` | Public keys | public |
 
+The gateway must route `/.well-known/jwks.json` to user-service without requiring a bearer token; all other user and admin routes follow the table's authorization requirements.
+
 ## Market (market-data-service)
 | Method | Path | Description | Auth |
 |---|---|---|---|
@@ -21,6 +23,9 @@ All paths are public through the gateway under `/api`. All require a Bearer JWT 
 | GET | `/api/market/symbols/{ticker}/history?from&to&interval` | Historical candles | USER |
 | POST/PUT/DELETE | `/api/admin/market/symbols[/{ticker}]` | Manage symbols | ADMIN |
 | PUT | `/api/admin/market/simulation` | `{tickIntervalMs, volatility, paused}` | ADMIN |
+| GET/PUT | `/api/admin/market/provider` | Read or select `SIMULATED` / `REAL` mode | ADMIN |
+
+In `REAL` mode, the configured market-data adapter obtains external quotes/history and normalizes them to the same price and tick contract used by `SIMULATED` mode. Provider selection and credentials are deployment configuration; secrets are never returned by this API.
 
 ## Orders (order-service)
 | Method | Path | Description | Auth |

@@ -32,7 +32,7 @@ C4Container
 
   Container(gateway, "api-gateway", "Spring Cloud Gateway", "JWT validation, routing, rate limiting (x2)")
   Container(userSvc, "user-service", "Spring Boot", "Registration, login, JWT issuing")
-  Container(marketSvc, "market-data-service", "Spring Boot", "Simulated price generator, symbols")
+  Container(marketSvc, "market-data-service", "Spring Boot", "Selectable simulated or real-data provider; symbols and price stream")
   Container(orderSvc, "order-service", "Spring Boot", "Order API and lifecycle (x3)")
   Container(matchSvc, "matching-service", "Spring Boot", "Order execution, limit order book")
   Container(portSvc, "portfolio-service", "Spring Boot", "Cash, holdings, P&L, reports")
@@ -75,7 +75,8 @@ C4Container
   Rel(portSvc, fn, "Generate report", "HTTP")
   Rel(notifSvc, redis, "Pub/sub fan-out")
   Rel(gateway, redis, "Rate limit counters")
-  Rel(matchSvc, redis, "Latest price cache")
+  Rel(marketSvc, redis, "Writes latest-price cache")
+  Rel(matchSvc, redis, "Reads latest prices for execution")
   Rel(userSvc, pg, "JDBC")
   Rel(orderSvc, pg, "JDBC")
   Rel(portSvc, pg, "JDBC")

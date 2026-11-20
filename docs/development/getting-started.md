@@ -35,7 +35,7 @@ Copy `.env.example` to `.env` and adjust (never commit `.env`). Default local cr
 | Swagger UI per service | http://localhost:808x/swagger-ui.html |
 
 ## Suggested build order
-Follow the [roadmap](../project/roadmap.md): skeleton + auth → market data + Kafka → orders + RabbitMQ + matching → portfolio → notifications + Redis → alerts → FaaS → frontend → scaling → docs/tutorial. Keep the system runnable at the end of every milestone.
+Follow the [roadmap](../project/roadmap.md): skeleton + auth → simulated market data + Kafka → orders + RabbitMQ + matching → portfolio → notifications + Redis → alerts → FaaS → frontend → scaling and real-data provider → docs/tutorial. Keep the system runnable at the end of every milestone; simulation remains the offline/demo mode.
 
 ## Create the GitHub backlog
 ```bash

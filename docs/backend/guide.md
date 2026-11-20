@@ -71,8 +71,8 @@ void onTrade(Envelope<TradeExecuted> e) { service.apply(e); } // idempotent
 - `RedisMessageListener` on every instance → `simpMessagingTemplate.convertAndSendToUser(userId, "/queue/notifications", payload)`.
 - Inputs: Kafka listeners + RabbitMQ listener both call `publish(...)`.
 
-## Market data simulation
-Geometric random walk per symbol: `p(t+1) = p(t) * exp((mu - sigma²/2)dt + sigma * sqrt(dt) * Z)`. Admin can change `sigma`, tick interval, and pause. Ticks are published to Kafka and the latest price is cached in Redis (`price:<symbol>`).
+## Market data providers
+Expose one market-data provider interface to the rest of the system, with two implementations: a simulated provider and a real-data provider. Select the active provider through configuration/admin controls; publish normalized ticks to Kafka and cache the latest normalized price in Redis (`price:<symbol>`) whichever provider is active. The simulator uses a geometric random walk per symbol: `p(t+1) = p(t) * exp((mu - sigma²/2)dt + sigma * sqrt(dt) * Z)`. The real-data adapter maps the chosen external provider's quote/history responses to the same symbol and tick model. Keep API keys in environment configuration, document provider rate limits, and retain the simulator as the reliable offline/demo mode.
 
 ## report-function
 Spring Cloud Function bean `report` (`Function<ReportRequest, byte[]>`). Request contains the portfolio snapshot (holdings, cash, P&L); output is the PDF. Packaged as a container; OpenFaaS template wraps it with `of-watchdog` (HTTP mode, port 8080).
