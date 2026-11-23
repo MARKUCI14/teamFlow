@@ -2,7 +2,7 @@
 
 ## Java / Spring
 - Java 21, Spring Boot 3.x. Use records for DTOs and events; constructor injection only.
-- Package layout: `com.stocksim.<service>.{api, application, domain, infrastructure}`.
+- Package layout: `com.teamflow.<service>.{api, application, domain, infrastructure}`.
   - `api`: controllers, request/response DTOs, exception handlers.
   - `application`: use cases / services, transaction boundaries.
   - `domain`: entities and domain logic, no Spring dependencies where practical.
@@ -10,9 +10,9 @@
 - Entities are never returned from controllers; map to DTOs.
 - Validation with `jakarta.validation` annotations on request DTOs.
 - Errors: `@RestControllerAdvice` returning RFC 7807 `ProblemDetail`.
-- Money is `BigDecimal` (scale 4), never `double`. Time is `Instant` in UTC.
+- Durations are stored as integer minutes; timestamps use `Instant` in UTC.
 - Database changes only through Flyway migrations (`src/main/resources/db/migration/V<n>__desc.sql`); `ddl-auto: validate`.
-- Logging: SLF4J, structured key=value, include `orderId`, `userId`, `eventId` where relevant. No secrets or tokens.
+- Logging: SLF4J, structured key=value, include `projectId`, `issueId`, `userId`, `eventId` where relevant. No secrets or tokens.
 - Formatting: Spotless (google-java-format AOSP or palantir) enforced in `./gradlew build`.
 
 ## REST conventions
@@ -20,7 +20,7 @@
 - Status codes: 200/201 success, 202 for async acceptance, 400 validation, 401/403 auth, 404, 409 conflict, 429 rate limit.
 - Pagination: `?page=0&size=20&sort=createdAt,desc`.
 - Every controller method documented with springdoc annotations; the generated OpenAPI feeds the frontend types.
-- Idempotency: `POST /api/orders` accepts an optional `Idempotency-Key` header.
+- Idempotency: Mutation endpoints accept an optional `Idempotency-Key` header where retries could create duplicate work.
 
 ## TypeScript / React
 - `strict: true`; no `any` (use `unknown` + narrowing).

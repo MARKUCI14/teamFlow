@@ -1,44 +1,13 @@
 # Getting Started
 
-## Prerequisites
-| Tool | Version | Check |
-|---|---|---|
-| JDK | 21 | `java -version` |
-| Node.js | 22 LTS | `node -v` |
-| Docker + Compose | recent | `docker compose version` |
-| Git, GitHub CLI (`gh`) | recent | `gh auth status` |
-| kubectl + kind (or k3d / Docker Desktop K8s) | for Kubernetes work | `kubectl version --client` |
-| faas-cli / arkade (optional) | for OpenFaaS | `faas-cli version` |
+This repository currently contains documentation and setup plans; backend, frontend, and deployment implementation is tracked in the [roadmap](../project/roadmap.md).
 
-Recommended IDEs: IntelliJ IDEA (backend), VS Code or WebStorm (frontend).
+## Planned stack
 
-## Clone and open
-```bash
-git clone https://github.com/MARKUCI14/soa.git
-cd soa
-```
+Java 21 / Spring Boot / Gradle, PostgreSQL, RabbitMQ, Kafka, Redis, React + TypeScript, Docker Compose, nginx, and OpenFaaS.
 
-## Local run modes
-1. **Everything in Docker**: `docker compose up --build`. Open http://localhost.
-2. **Infra in Docker, services in IDE**: `docker compose up -d postgres redis rabbitmq kafka`, then run services with `./gradlew :<service>:bootRun --args='--spring.profiles.active=local'` and `npm run dev` in `frontend/`.
-3. **Kubernetes**: see [deployment/kubernetes](../deployment/kubernetes.md).
+## Build order
 
-## Environment
-Copy `.env.example` to `.env` and adjust (never commit `.env`). Default local credentials are for development only.
+Follow the roadmap: auth and gateway → projects/membership → stakeholder submissions → manager triage and developer issues → work logs → Kafka notifications and Redis WebSocket fan-out → FaaS report → microfrontends → scaling, deployment, diagrams, and tutorial.
 
-## Useful URLs (Compose defaults)
-| What | URL |
-|---|---|
-| App (via nginx) | http://localhost |
-| RabbitMQ management | http://localhost:15672 |
-| Kafka UI | http://localhost:8090 |
-| Swagger UI per service | http://localhost:808x/swagger-ui.html |
-
-## Suggested build order
-Follow the [roadmap](../project/roadmap.md): skeleton + auth → simulated market data + Kafka → orders + RabbitMQ + matching → portfolio → notifications + Redis → alerts → FaaS → frontend → scaling and real-data provider → docs/tutorial. Keep the system runnable at the end of every milestone; simulation remains the offline/demo mode.
-
-## Create the GitHub backlog
-```bash
-gh auth login
-./scripts/create-github-issues.sh MARKUCI14/soa
-```
+Keep the runnable demo path focused on stakeholder request through developer work tracking.

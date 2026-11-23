@@ -1,13 +1,16 @@
-# ADR-0002: RabbitMQ for commands, Kafka for events
+# ADR 0002: RabbitMQ for Work Commands, Kafka for Domain Events
 
-- Status: accepted
+- Status: Accepted
+- Date: 2026-11-23
 
 ## Context
-The rubric asks for both a message broker and event streaming. They should each have a natural role rather than duplicate each other.
+
+TeamFlow must demonstrate both a message broker and event streaming. Report generation is queued, while project activity must be independently consumed by notifications and reporting.
 
 ## Decision
-Commands that exactly one service must act on (place/cancel order, send notification) go through RabbitMQ. Facts that many services react to independently (price ticks, executed trades, rejections) go through Kafka.
+
+Use RabbitMQ for report-generation and targeted notification commands. Use Kafka for committed submission, issue, work-log, and report lifecycle facts. Key events by projectId. REST remains the direct path for user-issued create/update operations to the owning service.
 
 ## Consequences
-+ Clear mental model, good tutorial material (compare retries/DLQ vs offsets/consumer groups).
-- Two brokers to operate; more containers locally. Mitigated with Compose profiles.
+
+Commands have one logical handler, retries, and dead-lettering. Events can be replayed and independently consumed. Producers must handle the database/broker dual-write problem; consumers must be idempotent.

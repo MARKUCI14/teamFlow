@@ -1,154 +1,65 @@
-# UML Diagrams
+# UML and Workflow Diagrams
 
-## Sequence: place a market order
+## Stakeholder submission to developer issue
 
 ```mermaid
 sequenceDiagram
-  actor T as Trader
-  participant N as nginx
-  participant G as api-gateway
-  participant O as order-service
-  participant P as portfolio-service
-  participant R as RabbitMQ
-  participant M as matching-service
+  actor S as Stakeholder
+  actor PM as Project Manager
+  actor D as Developer
+  participant G as API Gateway
+  participant SUB as Submission Service
+  participant ISS as Issue Service
   participant K as Kafka
-  participant NS as notification-service
-  participant W as Browser (WebSocket)
-
-  T->>N: POST /api/orders (JWT)
-  N->>G: forward
-  G->>G: validate JWT, rate limit
-  G->>O: POST /orders
-  O->>P: POST /internal/reservations
-  P-->>O: 201 reserved
-  O->>O: save order PENDING
-  O->>R: publish orders.place
-  O-->>T: 202 Accepted {orderId}
-  R->>M: deliver command
-  M->>M: read latest price, execute
-  M->>K: publish trades.executed
-  par consumers
-    K->>P: trades.executed (update cash, holdings)
-  and
-    K->>O: trades.executed (status FILLED)
-  and
-    K->>NS: trades.executed
-    NS->>W: STOMP /user/queue/notifications
-  end
+  participant N as Notification Service
+  S->>G: POST /api/projects/{id}/submissions (JWT)
+  G->>SUB: create submission
+  SUB-->>S: 201 Created
+  SUB->>K: submissions.events: SubmissionCreated
+  K->>N: event
+  N-->>PM: WebSocket notification
+  PM->>G: POST /api/submissions/{id}/issues
+  G->>ISS: create linked issue
+  ISS->>K: issues.events: IssueCreated
+  K->>N: event
+  N-->>D: assignment notification
 ```
 
-## Sequence: price alert
+## Developer work log
 
 ```mermaid
 sequenceDiagram
-  participant MD as market-data-service
+  actor D as Developer
+  participant G as Gateway
+  participant I as Issue Service
+  participant W as Worklog Service
   participant K as Kafka
-  participant A as alert-service
-  participant R as RabbitMQ
-  participant NS as notification-service
-  participant Redis
-  participant W as Browser
-
-  loop every second per symbol
-    MD->>K: market.ticks {symbol, price}
-  end
-  K->>A: tick
-  A->>A: evaluate active alerts for symbol
-  A->>A: mark alert TRIGGERED
-  A->>R: notifications.send {userId, text}
-  R->>NS: deliver
-  NS->>Redis: PUBLISH notifications {userId, payload}
-  Redis-->>NS: message to every instance
-  NS->>W: push if user connected to this instance
+  participant N as Notification Service
+  D->>G: PATCH /api/issues/{id} status
+  G->>I: authorize assignment and update
+  I->>K: IssueStatusChanged
+  D->>G: POST /api/issues/{id}/worklogs
+  G->>W: create duration entry
+  W->>K: WorklogCreated
+  K->>N: relevant project event
+  N-->>D: live update
+  N-->>PM: live update
 ```
 
-## Sequence: generate report (FaaS)
-
-```mermaid
-sequenceDiagram
-  actor T as Trader
-  participant P as portfolio-service
-  participant F as report-function
-  participant R as RabbitMQ
-  participant NS as notification-service
-
-  T->>P: POST /api/portfolio/reports
-  P-->>T: 202 {reportId, status: PENDING}
-  Note over P,F: Background report task invokes the FaaS after accepting the request
-  P->>F: POST /function/report (portfolio snapshot JSON)
-  F-->>P: 200 application/pdf
-  P->>P: store report READY
-  P->>R: notifications.send "report ready"
-  R->>NS: deliver
-  NS-->>T: WebSocket push
-  T->>P: GET /api/portfolio/reports/{id}/download
-```
-
-## State: order lifecycle
-
-```mermaid
-stateDiagram-v2
-  [*] --> PENDING: order accepted
-  PENDING --> OPEN: limit order resting in book
-  PENDING --> FILLED: market order executed
-  OPEN --> FILLED: price crosses limit
-  PENDING --> REJECTED: insufficient funds / unknown symbol
-  OPEN --> CANCELLED: user cancels
-  PENDING --> CANCELLED: user cancels
-  FILLED --> [*]
-  REJECTED --> [*]
-  CANCELLED --> [*]
-```
-
-## Class diagram: core domain
+## Issue entity
 
 ```mermaid
 classDiagram
-  class User { UUID id; String email; String passwordHash; Role role }
-  class Order { UUID id; UUID userId; String symbol; Side side; OrderType type; int quantity; BigDecimal limitPrice; OrderStatus status; Instant createdAt }
-  class Trade { UUID id; UUID orderId; UUID userId; String symbol; Side side; int quantity; BigDecimal price; Instant executedAt }
-  class Account { UUID userId; BigDecimal cash; BigDecimal reservedCash }
-  class Holding { UUID userId; String symbol; int quantity; BigDecimal avgCost }
-  class PriceAlert { UUID id; UUID userId; String symbol; Direction direction; BigDecimal threshold; AlertStatus status }
-  class Symbol { String ticker; String name; BigDecimal basePrice; double volatility; boolean active }
-  class Report { UUID id; UUID userId; ReportStatus status; Instant createdAt }
-  User "1" --> "*" Order
-  Order "1" --> "0..*" Trade
-  User "1" --> "1" Account
-  User "1" --> "*" Holding
-  User "1" --> "*" PriceAlert
-  User "1" --> "*" Report
-  Order ..> Symbol
-```
-
-## Deployment overview
-
-```mermaid
-flowchart LR
-  subgraph Edge
-    nginx
-  end
-  subgraph Services
-    gw1[api-gateway x2]
-    ord[order-service x3]
-    ns[notification-service x2]
-    other[user, market-data, matching,<br/>portfolio, alert]
-    fn[report-function]
-  end
-  subgraph Infra
-    pg[(PostgreSQL)]
-    redis[(Redis)]
-    rmq{{RabbitMQ}}
-    kfk{{Kafka}}
-  end
-  nginx --> gw1 --> ord
-  nginx --> ns
-  gw1 --> other
-  other --> pg
-  ord --> pg
-  other --> rmq
-  other --> kfk
-  ns --> redis
-  gw1 --> redis
-  other --> fn
+  class Project { +UUID id +String name }
+  class Membership { +UUID projectId +UUID userId +ProjectRole role }
+  class Submission { +UUID id +UUID projectId +UUID authorId +SubmissionType type +SubmissionStatus status }
+  class Issue { +UUID id +UUID projectId +UUID submissionId +UUID assigneeId +IssueStatus status +Priority priority }
+  class Comment { +UUID id +UUID issueId +UUID authorId +String body }
+  class WorkLog { +UUID id +UUID issueId +UUID userId +int minutes +LocalDate workDate }
+  Project "1" --> "*" Membership
+  Project "1" --> "*" Submission
+  Submission "0..1" --> "*" Issue : source
+  Project "1" --> "*" Issue
+  Issue "1" --> "*" Comment
+  Issue "1" --> "*" WorkLog
 ```

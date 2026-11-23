@@ -1,7 +1,7 @@
 # User Service Guide
 
 ## Purpose
-Owns user accounts, credentials, roles, login/refresh sessions, and signing keys. It issues JWTs; other services validate them as resource servers. It never owns portfolio balances.
+Owns user accounts, credentials, roles, login/refresh sessions, and signing keys. It issues JWTs; other services validate them as resource servers. It owns global accounts, credentials, and system roles; project membership is owned by project-service.
 
 ## Planned module files
 

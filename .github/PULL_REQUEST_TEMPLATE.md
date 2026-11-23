@@ -23,6 +23,6 @@ Closes #<issue>
 - [ ] Message/event schema changes are backward compatible (`docs/architecture/messaging.md`)
 - [ ] Docs/diagrams updated (`docs/`) where behavior or architecture changed
 - [ ] No secrets, tokens, or hard-coded hosts committed
-- [ ] Rubric item(s) touched: <!-- e.g. Kafka, RabbitMQ, load balancing, none -->
+- [ ] Rubric item(s) touched: <!-- e.g. Kafka, RabbitMQ, load balancing, FaaS, none -->
 
 ## Screenshots / logs (optional)

@@ -1,28 +1,15 @@
 # Service Catalog
 
-| Service | Port | Store | Exposes | Consumes | Produces | Replicas |
-|---|---|---|---|---|---|---|
-| api-gateway | 8080 | Redis (rate limit) | Public REST entry point | n/a | n/a | 2 |
-| user-service | 8081 | `userdb` | `/api/auth/**`, `/api/users/**`, JWKS | n/a | n/a | 1 |
-| market-data-service | 8082 | `marketdb` | `/api/market/**`, admin provider/simulation controls | External market data API (real mode) | Kafka `market.ticks` | 1 |
-| order-service | 8083 | `orderdb` | `/api/orders/**` | Kafka `trades.executed`, `orders.rejected` | RabbitMQ `orders.place`, `orders.cancel` | 3 |
-| matching-service | 8084 | `matchingdb` | internal only | RabbitMQ `orders.place`, `orders.cancel`; Kafka `market.ticks` (or shared latest-price cache) | Kafka `trades.executed`, `orders.rejected` | 1 (see scalability) |
-| portfolio-service | 8085 | `portfoliodb` | `/api/portfolio/**`, `/internal/reservations` | Kafka `trades.executed` | RabbitMQ `notifications.send`; calls report-function | 1-2 |
-| alert-service | 8086 | `alertdb` | `/api/alerts/**` | Kafka `market.ticks` | RabbitMQ `notifications.send` | 1 |
-| notification-service | 8087 | Redis | WebSocket `/ws` (STOMP) | RabbitMQ `notifications.send`; Kafka `trades.executed`, `orders.rejected`, `market.ticks` | Redis pub/sub `notifications`, `prices`; STOMP `/topic/prices` | 2 |
-| report-function | 8088 | none | `POST /function/report` (OpenFaaS) or `/report` (Compose) | HTTP | PDF | 0..n (scale to zero on OpenFaaS) |
+| Service | Port | Owns | Main API / messages |
+|---|---:|---|---|
+| api-gateway | 8080 | rate-limit state in Redis | secured public REST routing |
+| user-service | 8081 | accounts, roles | `/api/auth/**`, `/api/users/**`, JWKS |
+| project-service | 8082 | projects, memberships | `/api/projects/**`; `projects.*` |
+| submission-service | 8083 | stakeholder submissions | `/api/submissions/**`; `submissions.*` |
+| issue-service | 8084 | developer issues, comments | `/api/issues/**`; `issues.*` |
+| worklog-service | 8085 | time entries | `/api/worklogs/**`; `worklogs.*` |
+| notification-service | 8086 | ephemeral WebSocket sessions | `/ws`; consumes Kafka, Redis pub/sub |
+| report-service | 8087 | report jobs and metadata | `/api/reports/**`; RabbitMQ report commands |
+| report-function | 8088 | none | HTTP function that returns project report PDF |
 
-## Infrastructure
-
-| Component | Port | Notes |
-|---|---|---|
-| nginx | 80 / 443 | Edge LB; `/api` → gateways, `/ws` → notification-service, `/` → shell |
-| PostgreSQL | 5432 | One database per stateful service: `userdb`, `marketdb`, `orderdb`, `matchingdb`, `portfoliodb`, `alertdb` |
-| Redis | 6379 | Market-data latest-price cache, gateway rate limiting, WebSocket pub/sub |
-| RabbitMQ | 5672 / 15672 | AMQP + management UI |
-| Kafka (KRaft) | 9092 | Single broker locally; 3 partitions per topic |
-| Kafka UI (optional) | 8090 | Debugging |
-| Frontend dev servers | 5173-5176 | shell, market, trading, admin |
-
-## Responsibilities in one line
-- **user-service**: who you are. **market-data-service**: what things cost. **order-service**: what you asked for. **matching-service**: what actually happened. **portfolio-service**: what you own. **alert-service**: what you want to be told. **notification-service**: telling you, live. **report-function**: a PDF of what you own.
+Each service owns a separate PostgreSQL database/schema and never reads another service's tables. Kafka producers publish domain facts; consuming services use independent consumer groups. nginx listens on 80/443 and routes `/api`, `/ws`, and the web shell. Redis is used for rate limits and WebSocket fan-out; RabbitMQ handles report-generation work; Kafka streams project events.

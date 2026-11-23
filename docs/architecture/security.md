@@ -1,32 +1,23 @@
 # Security
 
-## Authentication
-- **user-service** issues JWTs signed with **RS256**. Public keys are published at `/.well-known/jwks.json`.
-- Access token: 15 minutes, claims `sub` (userId), `roles`, `iat`, `exp`. Refresh token: 7 days, stored hashed, rotated on use.
-- Passwords hashed with BCrypt (cost >= 10). Login endpoint is rate limited.
+## Authentication and authorization
 
-## Authorization
-- Roles: `USER`, `ADMIN`. Admin endpoints (`/api/admin/**`, simulation controls) require `ADMIN`.
-- Users can only access their own resources: services compare the token `sub` with the resource owner (never trust a `userId` from the request body or path alone).
+user-service issues short-lived RS256 JWTs and publishes JWKS. Tokens identify the user and carry roles; project membership remains authoritative for access to project resources. Roles are `ADMIN`, `PROJECT_MANAGER`, `STAKEHOLDER`, and `DEVELOPER`.
+
+- Admin manages accounts, roles, and membership.
+- Project managers manage projects they belong to, triage submissions, create/assign issues, review logs, and request reports.
+- Stakeholders can read permitted project status and create/view their own submissions.
+- Developers can access assigned issues, update allowed fields, comment, and create their own work logs.
+
+Services enforce both role and project/resource scope. Never trust a user ID supplied in a request body as proof of identity.
 
 ## Layers
-1. **nginx**: TLS termination (self-signed in dev), request size limits, only `/api`, `/ws`, `/` exposed.
-2. **api-gateway**: validates JWT, applies CORS, Redis-backed rate limiting, strips spoofable internal headers. Public routes: `/api/auth/**`, `/.well-known/jwks.json`, and `/actuator/health`.
-3. **Each service** is also an OAuth2 resource server (validates the JWT again via JWKS), so a bypassed gateway is not a bypassed security model.
-4. **Internal endpoints** (`/internal/**`, e.g. fund reservation) are not routed by the gateway and require a service token (shared secret from env/K8s Secret for this project; production alternative is mTLS or a service-account JWT). Documented simplification.
 
-## WebSocket security
-- Browser sends `Authorization: Bearer <jwt>` in the STOMP `CONNECT` frame; a channel interceptor validates it and binds the session principal.
-- Users subscribe only to `/user/queue/**`, so each sees only their own messages; broadcast topics (`/topic/prices`) are read-only for clients.
+1. nginx terminates TLS and exposes only web, `/api`, and `/ws` routes.
+2. api-gateway validates JWTs, applies CORS and Redis-backed rate limits, and strips spoofable identity headers.
+3. Each API service validates JWTs too, so bypassing the gateway does not bypass authorization.
+4. Internal endpoints are not routed publicly and require service authentication.
 
-## Secrets and config
-- No secrets in git. Local: `.env` (ignored) with `.env.example` committed. Kubernetes: `Secret` objects.
-- Broker and database credentials come from environment variables.
+## WebSockets and secrets
 
-## Checklist (OWASP-minded)
-- [ ] Input validation (`jakarta.validation`) on every DTO
-- [ ] ProblemDetail errors without stack traces
-- [ ] No sensitive data in logs
-- [ ] Dependency scanning (Dependabot or Gradle dependency-check)
-- [ ] CORS limited to known origins
-- [ ] Security headers (via nginx)
+Authenticate the STOMP CONNECT frame with the bearer token. Bind the authenticated principal and deliver only to `/user/queue/notifications`; never accept a client-supplied target user ID. Keep secrets in ignored local `.env` or Kubernetes Secrets. Hash passwords with BCrypt, validate all DTOs, avoid logging credentials, and return structured errors without stack traces.

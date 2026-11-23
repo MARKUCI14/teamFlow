@@ -1,19 +1,15 @@
-# StockSim
+# TeamFlow
 
-Stock trading simulator built with a service-oriented architecture (Java Spring Boot microservices, RabbitMQ, Kafka, Redis, a FaaS report generator, and a React + TypeScript micro-frontend web app). Market prices can come from a simulated provider or a real-data provider; simulation remains available for offline demos.
+TeamFlow is a role-based project and issue management system for stakeholders, project managers, developers, and administrators. It is a university project for *Arhitecturi orientate pe servicii* (Service-Oriented Architectures).
 
-University project for *Arhitecturi orientate pe servicii* (UBB Cluj).
+A stakeholder submits a suggestion or bug report. A project manager reviews it and creates one or more developer issues. Developers update issue status and log work time. Project members receive live updates, and managers can request project reports.
 
-- Documentation index: [`docs/README.md`](docs/README.md)
-- Architecture: [`docs/architecture/overview.md`](docs/architecture/overview.md)
-- Getting started: [`docs/development/getting-started.md`](docs/development/getting-started.md)
-- Contributor/AI guidance: [`CLAUDE.md`](CLAUDE.md)
+The target architecture uses Java Spring Boot microservices, secured REST, RabbitMQ, Kafka, Redis, a FaaS report generator, and a React + TypeScript microfrontend application.
 
-## Quick start
+- Documentation index: [docs/README.md](docs/README.md)
+- Architecture: [overview](docs/architecture/overview.md)
+- Getting started: [guide](docs/development/getting-started.md)
 
-```bash
-docker compose up --build      # once services exist
-# open http://localhost
-```
+## Status
 
-> Status: project setup phase. See [`docs/project/roadmap.md`](docs/project/roadmap.md).
+Project setup and documentation phase. See the [roadmap](docs/project/roadmap.md).

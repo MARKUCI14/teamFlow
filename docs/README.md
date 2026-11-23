@@ -1,31 +1,9 @@
-# StockSim Documentation
+# TeamFlow Documentation
 
-| Section | Contents |
-|---|---|
-| **Architecture** | |
-| [overview](architecture/overview.md) | Goals, domain, key flows, rubric mapping |
-| [c4-model](architecture/c4-model.md) | C4 context, container, component diagrams |
-| [uml-diagrams](architecture/uml-diagrams.md) | Sequence, state, and class diagrams |
-| [services](architecture/services.md) | Service catalog (ports, data, messaging) |
-| [messaging](architecture/messaging.md) | RabbitMQ and Kafka design, event schemas |
-| [security](architecture/security.md) | JWT, gateway, WebSocket auth |
-| [scalability](architecture/scalability.md) | Load balancing, replicas, Redis fan-out |
-| [adr/](architecture/adr/) | Architecture Decision Records |
-| **Development** | |
-| [getting-started](development/getting-started.md) | Setup and first run |
-| [git-workflow](development/git-workflow.md) | Branches, commits, PRs, labels |
-| [coding-standards](development/coding-standards.md) | Java, TypeScript, API conventions |
-| [testing](development/testing.md) | Test strategy |
-| [rubric-checklist](development/rubric-checklist.md) | Grading rubric to implementation mapping |
-| **Guides** | |
-| [backend/guide](backend/guide.md) | Backend module map, file responsibilities, conventions, and links to service guides |
-| [backend/services/](backend/services/) | Per-service implementation/file guides for gateway, all microservices, and report function |
-| [frontend/guide](frontend/guide.md) | Frontend workspace, shell, shared package, and file responsibilities for every remote |
-| [deployment/compose](deployment/compose.md) | Docker Compose |
-| [deployment/kubernetes](deployment/kubernetes.md) | Kubernetes + OpenFaaS |
-| [api/rest-api](api/rest-api.md) | REST endpoint reference |
-| **Project** | |
-| [project/roadmap](project/roadmap.md) | Milestones and backlog |
-| [tutorial/outline](tutorial/outline.md) | Tutorial (grade P) plan |
+- [Architecture overview](architecture/overview.md), [C4](architecture/c4-model.md), [UML](architecture/uml-diagrams.md), [service catalog](architecture/services.md), [messaging](architecture/messaging.md), [security](architecture/security.md), [scalability](architecture/scalability.md)
+- [REST API](api/rest-api.md)
+- [Roadmap](project/roadmap.md), [rubric checklist](development/rubric-checklist.md), [tutorial plan](tutorial/outline.md)
+- [Development guide](development/getting-started.md), [backend guide](backend/guide.md), [frontend guide](frontend/guide.md)
+- [Docker Compose](deployment/compose.md), [Kubernetes](deployment/kubernetes.md)
 
-Diagrams are written in Mermaid and render directly on GitHub.
+This repository currently contains project documentation and setup plans; implementation status is recorded in the roadmap.
