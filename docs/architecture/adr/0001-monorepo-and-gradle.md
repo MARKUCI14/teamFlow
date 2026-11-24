@@ -3,10 +3,10 @@
 - Status: accepted
 
 ## Context
-Nine backend modules plus four micro frontends are developed by a very small team and evaluated as one system.
+Four internal backend microservices plus an API gateway, a shared `common` module, and a report function are developed by a very small team and evaluated as one system. The React frontend uses a shell and two microfrontend remotes.
 
 ## Decision
-One Git repository. `backend/` is a Gradle multi-project build (Kotlin DSL, version catalog, shared convention plugin, `common` module for event contracts). `frontend/` uses npm workspaces.
+One Git repository. `backend/` is a Gradle multi-project build (Kotlin DSL, version catalog, shared convention plugin, `common` module for event contracts). It contains `user-service`, `work-management-service`, `notification-service`, and `report-service`, plus the edge `api-gateway` and `report-function`. `frontend/` uses npm workspaces for the shell and stakeholder/team remotes.
 
 ## Consequences
 + Atomic changes across services and contracts, one CI pipeline, easy for graders to clone and run.

@@ -2,16 +2,16 @@
 
 ## Proposed title
 
-**Scaling project notifications across Spring Boot microservices with Kafka, Redis, and WebSockets**
+**Securing a Spring Boot REST API with JWT and project roles**
 
 ## Working example
 
-A small public repository with two notification-service instances, Kafka events for issue status changes, Redis pub/sub fan-out, and authenticated STOMP clients. A developer updates an issue; a project manager connected to another instance receives the update. Include Docker Compose, sample users, curl commands, and a short troubleshooting section.
+A small public repository based on TeamFlow's user-service and work-management-service. It demonstrates login, JWT validation, and role- and project-scoped access to a project workflow endpoint. Include Docker Compose, synthetic sample users, curl commands, and a short troubleshooting section. Do not include real credentials.
 
 ## Three-page outline
 
-1. **Problem and architecture:** why service events and WebSocket connections can land on different instances; diagram Kafka → Redis → connected sessions.
-2. **Implementation:** event envelope, consumer group, Redis channel, session delivery, JWT/STOMP authorization, reconnect behavior.
-3. **Run and verify:** clone and start, log in as two roles, change issue status, scale notification service, observe delivery; discuss idempotency and failure recovery.
+1. **Problem and architecture:** explain the user-service JWT issuer, API gateway, and work-management authorization boundary.
+2. **Implementation:** show token issuance/validation and how project roles and membership protect a REST endpoint.
+3. **Run and verify:** clone and start, log in as stakeholder and PM, call allowed and denied endpoints, and inspect the HTTP responses.
 
 The public example must work from a clean clone and correspond to implemented system behavior. Do not present planned behavior as completed evidence.

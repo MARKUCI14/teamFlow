@@ -8,21 +8,22 @@ sequenceDiagram
   actor PM as Project Manager
   actor D as Developer
   participant G as API Gateway
-  participant SUB as Submission Service
-  participant ISS as Issue Service
+  participant WM as Work Management Service
   participant K as Kafka
   participant N as Notification Service
-  S->>G: POST /api/projects/{id}/submissions (JWT)
-  G->>SUB: create submission
-  SUB-->>S: 201 Created
-  SUB->>K: submissions.events: SubmissionCreated
+  S->>G: POST /api/projects/{id}/submissions (JWT; project Stakeholder)
+  G->>WM: validate membership and create submission
+  WM-->>S: 201 Created
+  WM->>K: submissions.events: SubmissionCreated
   K->>N: event
-  N-->>PM: WebSocket notification
-  PM->>G: POST /api/submissions/{id}/issues
-  G->>ISS: create linked issue
-  ISS->>K: issues.events: IssueCreated
+  N-->>PM: private submission notification
+  PM->>G: PATCH /api/submissions/{id} (project Project Manager; triage)
+  G->>WM: authorize and update triage
+  PM->>G: POST /api/submissions/{id}/issues (project Project Manager)
+  G->>WM: validate membership; create and assign linked issue
+  WM->>K: issues.events: IssueCreated
   K->>N: event
-  N-->>D: assignment notification
+  N-->>D: private assignment notification
 ```
 
 ## Developer work log
@@ -31,16 +32,15 @@ sequenceDiagram
 sequenceDiagram
   actor D as Developer
   participant G as Gateway
-  participant I as Issue Service
-  participant W as Worklog Service
+  participant WM as Work Management Service
   participant K as Kafka
   participant N as Notification Service
   D->>G: PATCH /api/issues/{id} status
-  G->>I: authorize assignment and update
-  I->>K: IssueStatusChanged
+  G->>WM: authorize assignment and update
+  WM->>K: IssueStatusChanged
   D->>G: POST /api/issues/{id}/worklogs
-  G->>W: create duration entry
-  W->>K: WorklogCreated
+  G->>WM: create duration entry
+  WM->>K: WorklogCreated
   K->>N: relevant project event
   N-->>D: live update
   N-->>PM: live update

@@ -17,7 +17,7 @@
 
 ## REST conventions
 - Base path `/api/<resource>`, plural nouns, JSON, kebab-case paths, camelCase fields.
-- Status codes: 200/201 success, 202 for async acceptance, 400 validation, 401/403 auth, 404, 409 conflict, 429 rate limit.
+- Status codes: 200/201 success, 202 for async acceptance, 400 validation, 401/403 auth, 404, and 409 conflict.
 - Pagination: `?page=0&size=20&sort=createdAt,desc`.
 - Every controller method documented with springdoc annotations; the generated OpenAPI feeds the frontend types.
 - Idempotency: Mutation endpoints accept an optional `Idempotency-Key` header where retries could create duplicate work.

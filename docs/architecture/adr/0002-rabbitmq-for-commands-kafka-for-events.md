@@ -9,7 +9,7 @@ TeamFlow must demonstrate both a message broker and event streaming. Report gene
 
 ## Decision
 
-Use RabbitMQ for report-generation and targeted notification commands. Use Kafka for committed submission, issue, work-log, and report lifecycle facts. Key events by projectId. REST remains the direct path for user-issued create/update operations to the owning service.
+Use RabbitMQ for report-generation commands. Use Kafka for committed submission, issue, work-log, and report lifecycle facts, keyed by projectId. REST remains the direct path for user-issued create/update operations to the owning service. The work-management-service publishes workflow facts; report-service publishes report lifecycle facts. notification-service consumes these Kafka facts and sends WebSocket updates; it does not need a separate RabbitMQ notification command.
 
 ## Consequences
 
