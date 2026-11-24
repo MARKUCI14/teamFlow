@@ -1,8 +1,8 @@
 package edu.portikmark.teamflow.reportfunction;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,7 +17,7 @@ class ReportFunctionHealthTest {
     @LocalServerPort private int port;
 
     @Test
-    void healthEndpointReturnsUp() throws Exception {
+    void healthEndpointReturnsUp() throws IOException, InterruptedException {
         HttpRequest request =
                 HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/actuator/health"))
                         .GET()
@@ -25,7 +25,8 @@ class ReportFunctionHealthTest {
         HttpResponse<String> response =
                 HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertEquals(200, response.statusCode());
-        assertTrue(response.body().contains("\"status\":\"UP\""), response.body());
+        assertTrue(
+                response.statusCode() == 200 && response.body().contains("\"status\":\"UP\""),
+                "Unexpected health response: " + response.statusCode() + " " + response.body());
     }
 }

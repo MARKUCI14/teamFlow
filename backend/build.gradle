@@ -13,6 +13,7 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
+    apply from: "${rootDir}/lint.gradle"
 
     dependencies {
         implementation platform(rootProject.libs.spring.boot.dependencies)

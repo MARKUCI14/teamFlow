@@ -16,11 +16,9 @@ class EventEnvelopeTest {
         EventEnvelope<String> event =
                 new EventEnvelope<>(eventId, "SubmissionCreated", 1, occurredAt, projectId, "payload");
 
-        assertEquals(eventId, event.eventId());
-        assertEquals("SubmissionCreated", event.type());
-        assertEquals(1, event.version());
-        assertEquals(occurredAt, event.occurredAt());
-        assertEquals(projectId, event.projectId());
-        assertEquals("payload", event.payload());
+        EventEnvelope<String> expected =
+                new EventEnvelope<>(eventId, "SubmissionCreated", 1, occurredAt, projectId, "payload");
+
+        assertEquals(expected, event, "Event envelope should preserve its shared contract fields");
     }
 }

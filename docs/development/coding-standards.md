@@ -13,7 +13,7 @@
 - Durations are stored as integer minutes; timestamps use `Instant` in UTC.
 - Database changes only through Flyway migrations (`src/main/resources/db/migration/V<n>__desc.sql`); `ddl-auto: validate`.
 - Logging: SLF4J, structured key=value, include `projectId`, `issueId`, `userId`, `eventId` where relevant. No secrets or tokens.
-- Formatting: Spotless (google-java-format AOSP or palantir) enforced in `./gradlew build`.
+- Static analysis: Checkstyle, PMD, and SpotBugs run for every Java module as part of `./gradlew check` and `./gradlew build`. The violations task makes findings fail the build; GitHub Actions runs the same build on backend changes.
 
 ## REST conventions
 - Base path `/api/<resource>`, plural nouns, JSON, kebab-case paths, camelCase fields.
