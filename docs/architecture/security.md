@@ -2,12 +2,12 @@
 
 ## Authentication and authorization
 
-user-service issues short-lived RS256 JWTs and publishes JWKS. Tokens identify the user and carry global roles; work-management-service remains authoritative for project membership and resource access. Roles are `ADMIN`, `PROJECT_MANAGER`, `STAKEHOLDER`, and `DEVELOPER`.
+user-service issues short-lived RS256 JWTs and publishes JWKS. Tokens identify the user and carry the global `ADMIN` role, if assigned. `PROJECT_MANAGER`, `STAKEHOLDER`, and `DEVELOPER` are project-scoped membership roles, not global JWT roles. work-management-service remains authoritative for project membership and resource access.
 
-- Admin manages accounts, roles, and membership.
-- Project managers manage projects they belong to, triage submissions, create/assign issues, review logs, and request reports.
-- Stakeholders can read permitted project status and create/view their own submissions.
-- Developers can access assigned issues, update allowed fields, comment, and create their own work logs.
+- Admin manages accounts, global roles, projects, and project membership.
+- Project managers manage the projects where they hold that membership role: triage submissions, create/assign issues, review logs, and request reports.
+- Stakeholders can read permitted project status and create/view their own submissions in projects where they hold that membership role.
+- Developers can access assigned issues, update allowed fields, comment, and create their own work logs in projects where they hold that membership role.
 
 Each owning service enforces role and resource scope. work-management-service checks project membership for projects, submissions, issues, and work logs. Never trust a user ID supplied in a request body as proof of identity.
 

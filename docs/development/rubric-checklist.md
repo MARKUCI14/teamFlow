@@ -12,14 +12,14 @@
 | 8 | Containers | 1 | Docker Compose; Kubernetes manifests | Clean local startup | [ ] |
 | 9 | UML and C4 documentation | 1 | Context/container and sequence/class/state diagrams | Rendered diagrams | [ ] |
 
-The assessment text lists nine system points. The tutorial is assessed separately as grade P; it is not an additional system point. It should be about three pages on a topic implemented here, with a reproducible working example in a public Git repository.
+The assessment text lists exactly nine system points (one point each in this checklist). The tutorial is assessed separately as grade P; it is not an additional system point. It should be about three pages on a topic implemented here, with a reproducible working example in a public Git repository.
 
 ## Demo flow
 
 1. Start the containerized stack and log in as stakeholder.
-2. Submit a bug or suggestion; show the secured REST request and persisted submission.
-3. Log in as project manager, triage it, create and assign an issue.
-4. Log in as developer, update status and log work time.
+2. Submit a bug or suggestion as a project stakeholder; show the secured REST request, persisted submission, and PM WebSocket notification.
+3. Log in as a project manager, triage the submission, create and assign a linked issue, and show the assigned developer notification.
+4. Log in as the assigned project developer, update status and log work time.
 5. Show live notifications arriving over the authenticated WebSocket connection.
 6. Request and download the FaaS project report; show RabbitMQ and Kafka activity.
 7. Show stakeholder/team microfrontend boundaries, deployment, and C4/UML documentation.

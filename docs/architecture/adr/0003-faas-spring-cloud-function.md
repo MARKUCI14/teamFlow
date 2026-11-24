@@ -9,7 +9,7 @@ The course requires a FaaS. Project managers need a useful report of issue activ
 
 ## Decision
 
-Implement a stateless Spring Cloud Function that accepts an authorized, project-scoped report snapshot and returns a PDF. report-service owns request state and result metadata; work-management-service checks project membership and prepares the snapshot. report-service coordinates generation through the `reports.generate` RabbitMQ command. Run the same function container locally and through OpenFaaS in Kubernetes.
+Implement a stateless Spring Cloud Function that accepts an authorized, project-scoped report snapshot and returns a PDF. report-service owns request state and result metadata; it asks work-management-service to check project membership and prepare the snapshot. report-service coordinates generation through the `reports.generate` RabbitMQ command. Run the same function container locally and through OpenFaaS in Kubernetes.
 
 ## Consequences
 

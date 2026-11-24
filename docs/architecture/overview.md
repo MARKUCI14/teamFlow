@@ -6,10 +6,10 @@ TeamFlow manages projects and the work requested by their stakeholders. Its core
 
 ## Roles
 
-- **Admin:** manages users, roles, and project membership across the system.
-- **Project manager:** creates projects, manages stakeholder access, triages submissions, creates and assigns issues, and reviews progress and work logs.
-- **Stakeholder:** views permitted project progress and submits suggestions or bug reports.
-- **Developer:** views assigned issues, changes status, adds comments, and records time worked.
+- **Admin:** has a global role and manages users, roles, projects, and project membership.
+- **Project manager:** has a project-scoped role; triages submissions, creates and assigns issues, and reviews progress and work logs in that project.
+- **Stakeholder:** has a project-scoped role; views permitted project progress and submits suggestions or bug reports.
+- **Developer:** has a project-scoped role; views assigned issues, changes status, adds comments, and records time worked.
 
 ## Main capabilities
 
@@ -32,11 +32,11 @@ TeamFlow manages projects and the work requested by their stakeholders. Its core
 
 ## Main flows
 
-**Triage:** stakeholder → gateway → work-management-service stores the submission → Kafka `submissions.events` → project manager receives notification. PM creates a linked issue through the same service, which validates project membership and publishes `issues.events`.
+**Triage:** stakeholder → gateway → work-management-service stores the submission → Kafka `submissions.events` → notification-service sends a private notification to the project manager. PM triages the submission and creates/assigns a linked issue through work-management-service, which validates project membership and publishes `issues.events`; notification-service sends the assignment notification to the developer.
 
 **Work tracking:** developer updates an assigned issue and records a work log through work-management-service. The service publishes Kafka facts. notification-service consumes relevant events and sends private WebSocket updates.
 
-**Report:** manager requests a report → report-service records a pending request and sends RabbitMQ `reports.generate` → FaaS generates a PDF from a scoped snapshot → report-service records completion and emits `reports.ready`.
+**Report:** project manager requests a report → report-service records a pending request → work-management-service checks project membership and prepares the scoped snapshot → report-service sends RabbitMQ `reports.generate` → FaaS generates a PDF → report-service records completion and emits `reports.ready`.
 
 ## Rubric mapping
 

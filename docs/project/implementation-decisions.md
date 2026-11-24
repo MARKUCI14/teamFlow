@@ -24,22 +24,22 @@ The tutorial is a separate grade P requirement: about three pages on an implemen
 - work-management-service owns projects, memberships, submissions, issues, comments, and work logs. This keeps the core workflow in one service boundary.
 - Each stateful service owns its data. report-service owns report jobs and result metadata; the stateless report function receives an authorized project snapshot and persists nothing.
 - Use nginx to load-balance stateless API-gateway replicas. Start notification-service as one instance; Redis is not included.
-- Use REST for user-issued create and update operations. Use RabbitMQ for report-generation commands and Kafka for committed domain facts. notification-service consumes Kafka events and sends authenticated STOMP updates.
+- Use REST for user-issued create and update operations. Use RabbitMQ for report-generation commands and Kafka for committed domain facts. notification-service consumes Kafka events and sends authenticated STOMP updates: new submissions notify the project's PM, and newly assigned linked issues notify the developer.
 - The React shell composes two remotes: stakeholder and team (PM, developer, and admin views).
 
 ## Core workflow and roles
 
-1. A stakeholder submits a suggestion or bug report through the gateway to work-management-service.
-2. PM triages it and creates or links issues within work-management-service.
-3. An assigned developer updates issue status and records their own work time through that service.
-4. work-management-service publishes domain events to Kafka; notification-service delivers relevant updates over WebSockets.
-5. A PM or admin requests a report through report-service, which queues generation through RabbitMQ and invokes the stateless report function.
+1. A stakeholder with project membership submits a suggestion or bug report through the gateway to work-management-service.
+2. work-management-service publishes `SubmissionCreated`; notification-service sends a private notification to the project's PM.
+3. The PM triages the submission and creates/assigns linked issues within work-management-service. It publishes `IssueCreated`; notification-service sends an assignment notification to the developer.
+4. The assigned developer updates issue status and records their own work time through work-management-service. Workflow facts are published to Kafka and relevant private WebSocket updates are delivered.
+5. A project PM or admin requests a report through report-service. work-management-service checks membership and prepares the scoped snapshot; report-service queues generation through RabbitMQ and invokes the stateless report function.
 
 Role boundaries:
 
-- **Admin:** manages users, roles, and project membership across the system.
-- **PM:** creates projects, manages stakeholder access, triages submissions, creates and assigns issues, reviews work logs, and requests reports.
-- **Stakeholder:** views permitted project progress and creates or views their own submissions.
-- **Developer:** views assigned issues, updates them, comments, and creates their own work logs.
+- **Admin (`ADMIN`):** global role; manages users, global roles, projects, and project membership.
+- **PM (`PROJECT_MANAGER`):** project-scoped membership role; manages that project's stakeholder access, triages submissions, creates and assigns issues, reviews work logs, and requests reports.
+- **Stakeholder (`STAKEHOLDER`):** project-scoped membership role; views permitted project progress and creates or views their own submissions.
+- **Developer (`DEVELOPER`):** project-scoped membership role; views assigned issues, updates them, comments, and creates their own work logs.
 
-Project membership and resource visibility are checked by work-management-service. report-service asks it to authorize and prepare a project-scoped report snapshot. Frontend route visibility is not an authorization boundary.
+The user-service JWT carries the global `ADMIN` role when assigned; project roles are read from membership records. Project membership and resource visibility are checked by work-management-service. report-service asks it to authorize and prepare a project-scoped report snapshot. Frontend route visibility is not an authorization boundary.

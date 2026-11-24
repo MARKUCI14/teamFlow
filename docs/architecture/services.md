@@ -14,4 +14,4 @@ TeamFlow has four internal microservices. The API gateway is the public edge; th
 
 Each stateful microservice owns its own database or schema and accesses it only through its own code. The work-management-service groups related project workflow data in one service boundary. The report function receives an authorized snapshot from report-service and stores no user or job data.
 
-Kafka carries committed submission, issue, work-log, and report lifecycle facts. RabbitMQ carries report-generation commands. nginx load-balances stateless API-gateway replicas; notification-service starts as a single instance.
+Kafka carries committed submission, issue, work-log, and report lifecycle facts. On `SubmissionCreated`, notification-service sends a private notification to the project manager; after the PM creates and assigns a linked issue, `IssueCreated` triggers an assignment notification to the developer. RabbitMQ carries report-generation commands. For reports, report-service asks work-management-service to authorize the request and prepare the project-scoped snapshot. nginx load-balances stateless API-gateway replicas; notification-service starts as a single instance.

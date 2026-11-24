@@ -4,10 +4,10 @@
 
 ```mermaid
 flowchart LR
-  A[Admin] --> T[TeamFlow]
-  PM[Project Manager] --> T
-  S[Stakeholder] --> T
-  D[Developer] --> T
+  A[Admin: global role] --> T[TeamFlow]
+  PM[Project Manager: project role] --> T
+  S[Stakeholder: project role] --> T
+  D[Developer: project role] --> T
   T --> PG[(PostgreSQL)]
   T --> MQ[RabbitMQ]
   T --> K[Kafka]
@@ -29,7 +29,7 @@ flowchart TB
   G2 --> US
   G2 --> WM
   G2 --> RS
-  RS -->|authorized snapshot request| WM
+  RS -->|authorize and prepare scoped snapshot| WM
   WM --> K[(Kafka)]
   RS --> K
   K --> NS

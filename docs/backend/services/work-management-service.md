@@ -10,7 +10,7 @@ The public routes are listed in the [REST API reference](../../api/rest-api.md).
 
 ## Events
 
-After committing workflow changes, publish versioned Kafka facts for submissions, issues, and work logs. The notification-service consumes those facts. Use an outbox or a documented publish-after-commit retry and make consumers idempotent.
+After committing workflow changes, publish versioned Kafka facts for submissions, issues, and work logs. `SubmissionCreated` is used to notify the project's PM; `IssueCreated` is used to notify the assigned developer. The notification-service consumes those facts. Use an outbox or a documented publish-after-commit retry and make consumers idempotent.
 
 ## Data ownership
 

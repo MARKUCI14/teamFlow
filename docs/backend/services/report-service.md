@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Owns report request handling, job status, and result metadata. It accepts report requests from PMs or admins, checks project membership and prepares a minimal snapshot through work-management-service, then coordinates PDF generation.
+Owns report request handling, job status, and result metadata. It accepts report requests from a project manager or admin, then asks work-management-service to check project membership and prepare a minimal snapshot before coordinating PDF generation.
 
 ## Communication
 
