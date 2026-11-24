@@ -1,0 +1,65 @@
+# UML and Workflow Diagrams
+
+## Stakeholder submission to developer issue
+
+```mermaid
+sequenceDiagram
+  actor S as Stakeholder
+  actor PM as Project Manager
+  actor D as Developer
+  participant G as API Gateway
+  participant SUB as Submission Service
+  participant ISS as Issue Service
+  participant K as Kafka
+  participant N as Notification Service
+  S->>G: POST /api/projects/{id}/submissions (JWT)
+  G->>SUB: create submission
+  SUB-->>S: 201 Created
+  SUB->>K: submissions.events: SubmissionCreated
+  K->>N: event
+  N-->>PM: WebSocket notification
+  PM->>G: POST /api/submissions/{id}/issues
+  G->>ISS: create linked issue
+  ISS->>K: issues.events: IssueCreated
+  K->>N: event
+  N-->>D: assignment notification
+```
+
+## Developer work log
+
+```mermaid
+sequenceDiagram
+  actor D as Developer
+  participant G as Gateway
+  participant I as Issue Service
+  participant W as Worklog Service
+  participant K as Kafka
+  participant N as Notification Service
+  D->>G: PATCH /api/issues/{id} status
+  G->>I: authorize assignment and update
+  I->>K: IssueStatusChanged
+  D->>G: POST /api/issues/{id}/worklogs
+  G->>W: create duration entry
+  W->>K: WorklogCreated
+  K->>N: relevant project event
+  N-->>D: live update
+  N-->>PM: live update
+```
+
+## Issue entity
+
+```mermaid
+classDiagram
+  class Project { +UUID id +String name }
+  class Membership { +UUID projectId +UUID userId +ProjectRole role }
+  class Submission { +UUID id +UUID projectId +UUID authorId +SubmissionType type +SubmissionStatus status }
+  class Issue { +UUID id +UUID projectId +UUID submissionId +UUID assigneeId +IssueStatus status +Priority priority }
+  class Comment { +UUID id +UUID issueId +UUID authorId +String body }
+  class WorkLog { +UUID id +UUID issueId +UUID userId +int minutes +LocalDate workDate }
+  Project "1" --> "*" Membership
+  Project "1" --> "*" Submission
+  Submission "0..1" --> "*" Issue : source
+  Project "1" --> "*" Issue
+  Issue "1" --> "*" Comment
+  Issue "1" --> "*" WorkLog
+```
