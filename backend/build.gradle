@@ -17,6 +17,7 @@ subprojects {
     dependencies {
         implementation platform(rootProject.libs.spring.boot.dependencies)
         testImplementation rootProject.libs.spring.boot.starter.test
+        testRuntimeOnly rootProject.libs.junit.platform.launcher
     }
 
     java {
