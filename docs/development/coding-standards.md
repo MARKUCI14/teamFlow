@@ -1,8 +1,8 @@
 # Coding Standards
 
 ## Java / Spring
-- Java 21, Spring Boot 3.x. Use records for DTOs and events; constructor injection only.
-- Package layout: `com.teamflow.<service>.{api, application, domain, infrastructure}`.
+- Java 21, Spring Boot 4.x, and the compatible Spring Cloud release train from the version catalog. Use records for DTOs and events; constructor injection only.
+- Package layout: `edu.portikmark.teamflow.<module-package>.{api, application, domain, infrastructure}`. Use the existing module roots `gateway`, `users`, `workmanagement`, `notifications`, `reports`, `reportfunction`, and `common`.
   - `api`: controllers, request/response DTOs, exception handlers.
   - `application`: use cases / services, transaction boundaries.
   - `domain`: entities and domain logic, no Spring dependencies where practical.
@@ -13,7 +13,7 @@
 - Durations are stored as integer minutes; timestamps use `Instant` in UTC.
 - Database changes only through Flyway migrations (`src/main/resources/db/migration/V<n>__desc.sql`); `ddl-auto: validate`.
 - Logging: SLF4J, structured key=value, include `projectId`, `issueId`, `userId`, `eventId` where relevant. No secrets or tokens.
-- Formatting: Spotless (google-java-format AOSP or palantir) enforced in `./gradlew build`.
+- Static analysis: Checkstyle, PMD, and SpotBugs run for every Java module as part of `./gradlew check` and `./gradlew build`. The violations task makes findings fail the build; GitHub Actions runs the same build on backend changes.
 
 ## REST conventions
 - Base path `/api/<resource>`, plural nouns, JSON, kebab-case paths, camelCase fields.
