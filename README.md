@@ -13,3 +13,7 @@ The target architecture uses four Java Spring Boot microservices, secured REST, 
 ## Status
 
 Project setup and documentation phase. See the [roadmap](docs/project/roadmap.md).
+
+## CI and main branch
+
+The GitHub Actions workflow keeps the aggregate **`CI / ci`** status check available while backend and frontend modules are added. Require this check before merging to `main`; see the [Git workflow and branch protection guide](docs/development/git-workflow.md). Jobs for absent modules are skipped; when frontend CI starts, it requires a lockfile and lint/build scripts.
