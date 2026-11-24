@@ -1,6 +1,6 @@
 # TeamFlow File Layout Guide
 
-This guide describes the planned repository layout for implementation. The repository currently contains planning documents, so these paths are targets rather than files that already exist.
+This guide describes the repository layout. The Gradle root, module build files, application entry points, and health configuration exist; the remaining feature paths are targets to add when implemented.
 
 Create files when a feature needs them. Do not add empty classes or duplicate shared business logic. `Review` in an issue means inspect the listed paths and update them only if the change requires it.
 
@@ -10,9 +10,11 @@ Create files when a feature needs them. Do not add empty classes or duplicate sh
 .
 ├── .github/workflows/ci.yml
 ├── backend/                         # Gradle multi-project build
-│   ├── settings.gradle.kts
-│   ├── build.gradle.kts
+│   ├── settings.gradle
+│   ├── build.gradle
 │   ├── gradle/libs.versions.toml
+│   ├── gradlew
+│   ├── gradle/wrapper/              # Wrapper JAR and pinned Gradle distribution properties
 │   ├── build-logic/                 # shared Gradle conventions, only where useful
 │   ├── common/                      # versioned messages and common error types
 │   ├── api-gateway/
@@ -37,13 +39,13 @@ The four internal microservices are `user-service`, `work-management-service`, `
 
 ## Backend conventions
 
-Each backend module has its own `build.gradle.kts`, application entry point, configuration, and tests. Spring services use Java 21 and the package layers `api`, `application`, `domain`, and `infrastructure`; add a layer only when it has real responsibilities.
+Each backend module has its own `build.gradle`, application entry point, configuration, and tests. Spring services use Java 21 and the package layers `api`, `application`, `domain`, and `infrastructure`; add a layer only when it has real responsibilities.
 
 ```text
 <module>/
-├── build.gradle.kts
+├── build.gradle
 └── src/
-    ├── main/java/com/teamflow/<module>/
+    ├── main/java/edu/portikmark/teamflow/<module-package>/
     │   ├── <Module>Application.java
     │   ├── api/                     # controllers, request/response DTOs
     │   ├── application/             # use cases and transaction boundaries
@@ -53,7 +55,7 @@ Each backend module has its own `build.gradle.kts`, application entry point, con
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/            # Flyway SQL when the module owns a schema
-    └── test/java/com/teamflow/<module>/
+    └── test/java/edu/portikmark/teamflow/<module-package>/
 ```
 
 Use valid Java package names (no hyphens). Controllers accept and return DTOs, not persistence entities. Put schema changes in Flyway migrations and set Hibernate to validate the schema. Each service owns its database access; other services use documented APIs or events.
@@ -62,10 +64,10 @@ Use valid Java package names (no hyphens). Controllers accept and return DTOs, n
 
 ### `backend/common`
 
-Keep this module small and limited to code that genuinely crosses service boundaries.
+Keep this module small and limited to contracts that genuinely cross service boundaries: the versioned event envelope and shared ProblemDetail helper. Do not add service API DTOs or business logic.
 
 ```text
-backend/common/src/main/java/com/teamflow/common/
+backend/common/src/main/java/edu/portikmark/teamflow/common/
 ├── events/                          # versioned event envelope and shared event metadata
 └── errors/                          # shared ProblemDetail/error contract, if needed
 ```
@@ -78,12 +80,12 @@ The gateway routes public REST calls and validates JWTs. It has no business data
 
 ```text
 backend/api-gateway/
-├── src/main/java/com/teamflow/gateway/
+├── src/main/java/edu/portikmark/teamflow/gateway/
 │   ├── GatewayApplication.java
 │   ├── config/                      # route and CORS configuration
 │   └── security/                    # JWT resource-server configuration
 ├── src/main/resources/application.yml
-└── src/test/java/com/teamflow/gateway/
+└── src/test/java/edu/portikmark/teamflow/gateway/
 ```
 
 Keep business authorization in the service that owns the resource. Route `/ws` through nginx to notification-service as documented by deployment configuration.
@@ -93,7 +95,7 @@ Keep business authorization in the service that owns the resource. Route `/ws` t
 Owns accounts, credentials, global roles, refresh sessions, and token signing/JWKS.
 
 ```text
-backend/user-service/src/main/java/com/teamflow/users/
+backend/user-service/src/main/java/edu/portikmark/teamflow/users/
 ├── UserServiceApplication.java
 ├── api/                             # AuthController, UserController, DTOs
 ├── application/                     # registration, authentication, token use cases
@@ -104,14 +106,14 @@ backend/user-service/src/main/java/com/teamflow/users/
 └── config/                          # endpoint access rules and service configuration
 ```
 
-Also add `src/main/resources/application.yml`, Flyway migrations under `src/main/resources/db/migration/`, and tests under `src/test/java/com/teamflow/users/`. Project membership and project roles belong to work-management-service, not here.
+Also add `src/main/resources/application.yml`, Flyway migrations under `src/main/resources/db/migration/`, and tests under `src/test/java/edu/portikmark/teamflow/users/`. Project membership and project roles belong to work-management-service, not here.
 
 ### `backend/work-management-service`
 
 Owns projects, memberships, submissions, triage, issues, comments, and work logs. Keep each feature in this service; organize by feature inside the standard layers.
 
 ```text
-backend/work-management-service/src/main/java/com/teamflow/workmanagement/
+backend/work-management-service/src/main/java/edu/portikmark/teamflow/workmanagement/
 ├── WorkManagementApplication.java
 ├── project/                         # API, use cases, domain, persistence
 ├── membership/                      # project roles and access policy
@@ -129,7 +131,7 @@ For a feature, keep its controller and DTOs in `api`, its use case and transacti
 Consumes Kafka facts and sends authenticated STOMP notifications. Start with one instance; Redis fan-out is not part of the plan.
 
 ```text
-backend/notification-service/src/main/java/com/teamflow/notifications/
+backend/notification-service/src/main/java/edu/portikmark/teamflow/notifications/
 ├── NotificationServiceApplication.java
 ├── messaging/                       # Kafka listeners and event-to-notification mapping
 ├── websocket/                       # STOMP endpoint, destinations, principal delivery
@@ -144,7 +146,7 @@ Add `application.yml` and tests for event handling, authorization, and destinati
 Owns report requests, job status, and result metadata. It checks access through work-management-service, sends a RabbitMQ command, and records the result.
 
 ```text
-backend/report-service/src/main/java/com/teamflow/reports/
+backend/report-service/src/main/java/edu/portikmark/teamflow/reports/
 ├── ReportServiceApplication.java
 ├── api/                             # report request, status, and download endpoints
 ├── application/                     # authorization, job lifecycle, orchestration
@@ -164,14 +166,14 @@ The report function is stateless: it receives an authorized project snapshot and
 
 ```text
 backend/report-function/
-├── build.gradle.kts
-├── src/main/java/com/teamflow/reportfunction/
+├── build.gradle
+├── src/main/java/edu/portikmark/teamflow/reportfunction/
 │   ├── ReportFunctionApplication.java
 │   ├── GenerateReportFunction.java
 │   ├── api/                          # input/output payload types
 │   └── pdf/                          # PDF formatting code
 ├── src/main/resources/application.yml
-└── src/test/java/com/teamflow/reportfunction/
+└── src/test/java/edu/portikmark/teamflow/reportfunction/
 ```
 
 Add the function container and OpenFaaS deployment configuration when implementing its deployment. Keep the function callable locally for development.

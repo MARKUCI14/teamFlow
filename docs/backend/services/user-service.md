@@ -7,7 +7,7 @@ Owns user accounts, credentials, global roles, login/refresh sessions, and signi
 
 | Path (under `backend/user-service/`) | Responsibility |
 |---|---|
-| `build.gradle.kts` | MVC, security, JPA, PostgreSQL, Flyway, validation, JWT signing, Actuator, and tests. |
+| `build.gradle` | MVC, security, JPA, PostgreSQL, Flyway, validation, JWT signing, Actuator, and tests. |
 | `UserServiceApplication.java` | Spring Boot entry point. |
 | `api/AuthController.java` | Register, login, refresh, and logout endpoints. |
 | `api/UserController.java` | Current-user profile and admin user listing endpoints. |

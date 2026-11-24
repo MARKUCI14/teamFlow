@@ -1,8 +1,8 @@
 # Coding Standards
 
 ## Java / Spring
-- Java 21, Spring Boot 3.x. Use records for DTOs and events; constructor injection only.
-- Package layout: `com.teamflow.<service>.{api, application, domain, infrastructure}`.
+- Java 21, Spring Boot 4.x, and the compatible Spring Cloud release train from the version catalog. Use records for DTOs and events; constructor injection only.
+- Package layout: `edu.portikmark.teamflow.<module-package>.{api, application, domain, infrastructure}`. Use the existing module roots `gateway`, `users`, `workmanagement`, `notifications`, `reports`, `reportfunction`, and `common`.
   - `api`: controllers, request/response DTOs, exception handlers.
   - `application`: use cases / services, transaction boundaries.
   - `domain`: entities and domain logic, no Spring dependencies where practical.

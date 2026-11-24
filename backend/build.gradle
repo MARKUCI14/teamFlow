@@ -1,0 +1,35 @@
+plugins {
+    alias(libs.plugins.spring.boot) apply false
+}
+
+allprojects {
+    group = 'edu.portikmark.teamflow'
+    version = '0.1.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    dependencies {
+        implementation platform(rootProject.libs.spring.boot.dependencies)
+        testImplementation rootProject.libs.spring.boot.starter.test
+    }
+
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.release = 21
+        options.encoding = 'UTF-8'
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+    }
+}

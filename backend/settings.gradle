@@ -1,0 +1,4 @@
+rootProject.name = 'teamflow-backend'
+
+include 'common', 'api-gateway', 'user-service', 'work-management-service',
+        'notification-service', 'report-service', 'report-function'

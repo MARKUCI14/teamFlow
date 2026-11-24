@@ -26,7 +26,7 @@ Frontend: shell, shared, stakeholder, team. The team remote contains PM, develop
 6. Keep services stateless where possible. nginx load-balances gateway replicas; the notification service starts as one instance and sends authenticated STOMP updates.
 7. Never hard-code secrets or log tokens/passwords. Use RFC 7807 errors and OpenAPI.
 8. Microfrontends communicate through shared shell contracts, not direct imports.
-9. Java packages use `com.teamflow.<service>.{api,application,domain,infrastructure}`.
+9. Java packages use `edu.portikmark.teamflow.<module-package>.{api,application,domain,infrastructure}`.
 10. Keep REST, event, C4/UML, and deployment docs synchronized with changes.
 
 Start from `README.md`; implementation sequence is in `docs/project/roadmap.md`.
