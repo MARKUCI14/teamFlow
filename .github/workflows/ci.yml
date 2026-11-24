@@ -76,3 +76,24 @@ jobs:
         run: docker compose config -q
       - name: Build images
         run: docker compose build
+
+  # Keep one required check available even while optional modules are absent.
+  ci:
+    name: ci
+    needs: [detect, backend, frontend, containers]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check module results
+        env:
+          DETECT_RESULT: ${{ needs.detect.result }}
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          CONTAINERS_RESULT: ${{ needs.containers.result }}
+        run: |
+          for result in "$DETECT_RESULT" "$BACKEND_RESULT" "$FRONTEND_RESULT" "$CONTAINERS_RESULT"; do
+            if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
+              echo "A CI job did not complete successfully."
+              exit 1
+            fi
+          done
