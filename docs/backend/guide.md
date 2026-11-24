@@ -12,4 +12,4 @@ The planned backend is a Gradle multi-project build using Java 21 and Spring Boo
 - `report-service`: report requests and RabbitMQ coordination.
 - `report-function`: stateless Spring Cloud Function deployed through OpenFaaS.
 
-Use package layers `{api, application, domain, infrastructure}` under `com.teamflow.<service>`. Put validation at the API boundary and business rules in domain/application code. Keep internal APIs off the public gateway. Use [service catalog](../architecture/services.md), [REST reference](../api/rest-api.md), and [messaging contracts](../architecture/messaging.md) as source of truth.
+Use package layers `{api, application, domain, infrastructure}` under `com.teamflow.<service>`. Put validation at the API boundary and business rules in domain/application code. Keep internal APIs off the public gateway. See the [file layout guide](file-layout-guide.md) for the planned structure of each service and frontend module. Use [service catalog](../architecture/services.md), [REST reference](../api/rest-api.md), and [messaging contracts](../architecture/messaging.md) as source of truth.
