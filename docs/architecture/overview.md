@@ -23,32 +23,33 @@ TeamFlow manages projects and the work requested by their stakeholders. Its core
 
 ## Architecture
 
-- Spring Boot microservices, each owning its data; synchronous REST through an API gateway.
-- RabbitMQ carries work commands that need one handler, such as submission triage and report requests.
-- Kafka carries durable facts that multiple services can consume, such as submission, issue, and work-log events.
-- Redis provides gateway rate-limit state and WebSocket fan-out across notification-service instances.
-- nginx load-balances stateless gateway instances and proxies authenticated WebSockets.
-- React + TypeScript shell composes independent microfrontends.
+- Four Spring Boot microservices: user-service, work-management-service, notification-service, and report-service. Each stateful service owns its data; synchronous REST goes through an API gateway.
+- RabbitMQ carries report-generation commands. User-issued submission triage and issue creation remain REST calls to their owning services.
+- Kafka carries durable submission, issue, work-log, and report facts; notification-service consumes them.
+- nginx load-balances stateless API-gateway replicas and proxies authenticated WebSockets to one notification-service instance.
+- React + TypeScript shell composes two remotes: stakeholder and team (PM, developer, and admin views).
 - Docker Compose is the local demo; Kubernetes/OpenFaaS is the deployment target.
 
 ## Main flows
 
-**Triage:** stakeholder → gateway → submission-service stores submission → Kafka `submissions.created` → project manager receives notification. Manager creates an issue through issue-service; it validates project membership and publishes `issues.created`.
+**Triage:** stakeholder → gateway → work-management-service stores the submission → Kafka `submissions.events` → project manager receives notification. PM creates a linked issue through the same service, which validates project membership and publishes `issues.events`.
 
-**Work tracking:** developer updates issue status and records a work log. issue-service and worklog-service publish Kafka facts. Notification-service consumes relevant events and sends private WebSocket updates; report-function can produce a project summary.
+**Work tracking:** developer updates an assigned issue and records a work log through work-management-service. The service publishes Kafka facts. notification-service consumes relevant events and sends private WebSocket updates.
 
 **Report:** manager requests a report → report-service records a pending request and sends RabbitMQ `reports.generate` → FaaS generates a PDF from a scoped snapshot → report-service records completion and emits `reports.ready`.
 
 ## Rubric mapping
 
-| Item | Planned evidence |
-|---|---|
-| Secured REST and >2 microservices | Gateway plus user, project, submission, issue, worklog, notification, report services |
-| Load balancing / scalable notifications | nginx gateway upstreams; Redis pub/sub across WebSocket replicas |
-| Message broker | RabbitMQ commands with retry and dead-letter handling |
-| Event streaming | Kafka domain events and independent consumer groups |
-| FaaS | OpenFaaS project report function |
-| Web app + server notifications | React app, REST and STOMP WebSocket |
-| Microfrontend | Shell plus project, stakeholder, developer, admin remotes |
-| Containers | Docker Compose and Kubernetes manifests |
-| UML and C4 | Diagrams in this documentation set |
+| Assessment item | TeamFlow evidence | Points |
+|---|---|---:|
+| Secured REST API (inside a system with more than two microservices) | API gateway and four internal services: user, work-management, notification, and report | 1 |
+| Scalability: load balancers **or** scalable WebSockets | nginx load-balances API-gateway replicas; this satisfies the one scalability item | 1 |
+| Message broker | RabbitMQ report-generation command | 1 |
+| Event streaming | Kafka domain events and independent consumer groups | 1 |
+| FaaS | OpenFaaS project report function | 1 |
+| Web app with server-side notifications | React app, REST and STOMP WebSocket | 1 |
+| Microfrontend architecture | React shell plus stakeholder and team remotes | 1 |
+| Containers | Docker Compose and Kubernetes manifests | 1 |
+| UML and C4 documentation | Diagrams in this documentation set | 1 |
+
+These are nine system points. The tutorial is assessed separately as grade P and does not add a system point.

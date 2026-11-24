@@ -13,7 +13,7 @@ labels: feat
 - [ ]
 
 ## Services / modules affected
-<!-- e.g. project-service, issue-service, frontend/developer -->
+<!-- e.g. work-management-service, notification-service, frontend/team -->
 
 ## Rubric item
 <!-- REST API / load balancing / RabbitMQ / Kafka / FaaS / web app + notifications / micro frontend / containers / docs / none -->

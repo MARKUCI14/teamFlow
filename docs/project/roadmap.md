@@ -5,16 +5,13 @@ Keep the stack runnable at each milestone. The core demo is stakeholder submissi
 | Milestone | Goal | Rubric evidence |
 |---|---|---|
 | M0 Setup | Repo, docs, CI, ADRs | Documentation |
-| M1 Foundation | Gradle, shared contracts, user-service, JWT, gateway, Compose infrastructure | Secured REST, containers |
-| M2 Projects | project-service, roles, memberships, project screens | >2 microservices foundation |
-| M3 Submissions | stakeholder submission API/UI, Kafka events | Event streaming |
-| M4 Issues | manager triage, issue lifecycle and assignment, RabbitMQ command example | Message broker, core workflow |
-| M5 Work tracking | worklog-service, Kafka events, project time summaries | Microservices, event streaming |
-| M6 Realtime | notification-service, STOMP, Redis fan-out, multiple instances | Web app notifications, scalable WebSockets |
-| M7 FaaS | report-service and OpenFaaS PDF report | FaaS |
-| M8 Frontend | shell + project, stakeholder, developer, admin microfrontends | Web app, microfrontend |
-| M9 Scale/deploy | nginx LB, replica demo, Compose and Kubernetes documentation | Load balancing, containers |
-| M10 Finish | C4/UML, tutorial repo and text, demo rehearsal | Documentation, P grade |
+| M1 Foundation | Gradle, shared contracts, user-service, gateway, and Compose infrastructure | Secured REST, containers |
+| M2 Work management | one service for projects, memberships, submissions, issues, and work logs | Core workflow |
+| M3 Events and notifications | Kafka workflow events and notification-service STOMP updates | More than two internal microservices, event streaming, server-side notifications |
+| M4 Reports | report-service, RabbitMQ report command, and OpenFaaS PDF function | Message broker, FaaS |
+| M5 React app | shell plus stakeholder and team microfrontend remotes | Web app, microfrontend |
+| M6 Scale and deploy | nginx load-balances gateway replicas; Compose and Kubernetes docs | Load balancing, containers |
+| M7 Documentation and tutorial | UML/C4 alignment, tutorial repo, and demo rehearsal | Documentation, grade P |
 
 ## Scope controls
 

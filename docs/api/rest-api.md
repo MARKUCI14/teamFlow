@@ -2,14 +2,18 @@
 
 All public requests go through nginx and api-gateway. Except auth, JWKS, and health, APIs require a JWT. Project resources also require membership and role checks. IDs are UUIDs; list endpoints are paginated.
 
+The gateway routes auth and user endpoints to user-service, project/submission/issue/work-log endpoints to work-management-service, report endpoints to report-service, and `/ws` to notification-service.
+
 ## Authentication and projects
 
 | Method | Endpoint | Purpose | Role |
 |---|---|---|---|
 | POST | `/api/auth/register`, `/api/auth/login` | Create account / receive tokens | Public |
 | GET | `/api/users/me` | Current user and roles | Any authenticated |
-| GET/POST | `/api/projects` | List accessible / create project | Member / Admin or PM |
-| GET/PATCH | `/api/projects/{id}` | View/update project | Member / Admin or PM |
+| GET | `/api/projects` | List accessible projects | Member |
+| POST | `/api/projects` | Create project | Admin or PM |
+| GET | `/api/projects/{id}` | View project | Member, subject to project visibility |
+| PATCH | `/api/projects/{id}` | Update project | Admin or PM |
 | POST | `/api/projects/{id}/members` | Add project member with role | PM / Admin |
 
 ## Stakeholder submissions
@@ -26,10 +30,14 @@ All public requests go through nginx and api-gateway. Except auth, JWKS, and hea
 
 | Method | Endpoint | Purpose | Role |
 |---|---|---|---|
-| GET/POST | `/api/projects/{id}/issues` | List / create issue | Member / PM |
-| GET/PATCH | `/api/issues/{id}` | View / update issue status or assignment | Member / assignee / PM |
-| POST | `/api/issues/{id}/comments` | Add comment | Project member |
-| GET/POST | `/api/issues/{id}/worklogs` | List / log minutes and work date | Developer / PM |
+| GET | `/api/projects/{id}/issues` | List visible project issues | Member, subject to project visibility |
+| POST | `/api/projects/{id}/issues` | Create an issue directly | PM / Admin |
+| GET | `/api/issues/{id}` | View issue | Member, subject to project visibility |
+| PATCH | `/api/issues/{id}` | Update issue status | Assigned developer / PM / Admin |
+| PATCH | `/api/issues/{id}` | Change issue assignee | PM / Admin |
+| POST | `/api/issues/{id}/comments` | Add comment | Assigned developer / PM / Admin |
+| GET | `/api/issues/{id}/worklogs` | List own entries or review issue entries | Developer (own) / PM / Admin |
+| POST | `/api/issues/{id}/worklogs` | Log minutes and work date | Assigned developer (own entry) |
 | GET | `/api/projects/{id}/worklogs` | Project time summary | PM / Admin |
 
 ## Reports and realtime

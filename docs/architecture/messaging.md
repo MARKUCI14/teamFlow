@@ -7,17 +7,18 @@ RabbitMQ carries commands (“please perform this work”) to one handler. Kafka
 | Routing key / queue | Command | Consumer |
 |---|---|---|
 | `reports.generate` | Generate a report for a scoped project snapshot | report-service / FaaS adapter |
-| `notifications.send` | Deliver a targeted notification | notification-service |
 
 Queues are durable, messages persistent, publishers use confirms, and bounded retries lead to a dead-letter queue. Issue creation and status changes are synchronous REST commands to the service that owns the issue; Kafka announces the committed result.
+
+The notification-service consumes Kafka domain events and sends WebSocket updates. Targeted notification delivery does not use a separate RabbitMQ command.
 
 ## Kafka topics
 
 | Topic | Key | Producer | Consumer groups |
 |---|---|---|---|
-| `submissions.events` | projectId | submission-service | notifications, project-activity |
-| `issues.events` | projectId | issue-service | notifications, project-activity, reports |
-| `worklogs.events` | projectId | worklog-service | notifications, reports |
+| `submissions.events` | projectId | work-management-service | notifications |
+| `issues.events` | projectId | work-management-service | notifications, reports |
+| `worklogs.events` | projectId | work-management-service | notifications, reports |
 | `reports.events` | projectId | report-service | notifications |
 
 Independent services use separate groups; replicas of one service share a group and split partitions. Use project ID as key to retain per-project ordering.
