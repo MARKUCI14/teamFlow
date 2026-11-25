@@ -2,6 +2,7 @@ package edu.portikmark.teamflow.users.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import jakarta.servlet.DispatcherType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -18,6 +19,8 @@ public class SecurityConfig {
         try {
             return http.csrf(AbstractHttpConfigurer::disable)
                     .authorizeHttpRequests(auth -> auth
+                            // Keep the original status code for errors raised by public auth endpoints.
+                            .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                             .requestMatchers("/api/auth/**", "/.well-known/jwks.json", "/actuator/health")
                             .permitAll()
                             .anyRequest().authenticated())

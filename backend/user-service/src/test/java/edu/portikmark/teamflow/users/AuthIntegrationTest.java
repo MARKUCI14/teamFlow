@@ -76,6 +76,14 @@ class AuthIntegrationTest {
     }
 
     @Test
+    void duplicateRegistrationReturnsConflict() throws IOException, InterruptedException {
+        String email = "duplicate@example.com";
+        post("/api/auth/register", email, "correct-horse-battery");
+        HttpResponse<String> duplicate = post("/api/auth/register", email, "correct-horse-battery");
+        assertEquals(409, duplicate.statusCode(), "Duplicate registration should return conflict");
+    }
+
+    @Test
     void issuedTokenAuthenticatesCurrentUser() throws IOException, InterruptedException {
         HttpResponse<String> registration = post("/api/auth/register",
                 "current@example.com", "correct-horse-battery");
