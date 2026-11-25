@@ -31,6 +31,10 @@ Create files when a feature needs them. Do not add empty classes or duplicate sh
 │   └── shared/
 ├── docker-compose.yml               # root entry point used by local docs and CI
 ├── deploy/nginx/nginx.conf
+├── scripts/
+│   ├── generate-kafka-certs.sh       # creates ignored local TLS stores for Kafka
+│   └── kafka-healthcheck.sh          # authenticated local broker readiness check
+├── .local/kafka-certs/              # generated locally; ignored by Git
 ├── .env.example
 └── docs/
 ```
@@ -210,6 +214,9 @@ Put tests beside the relevant workspace or in its `src` test folders. Generate A
 .env.example                         # variable names and safe local defaults only
 docker-compose.yml                   # local dependencies and full stack
 deploy/nginx/nginx.conf              # REST balancing and WebSocket proxying
+scripts/generate-kafka-certs.sh      # local Kafka TLS setup
+scripts/kafka-healthcheck.sh         # SASL/PLAIN + TLS broker health check
+.local/kafka-certs/                  # generated keystore/truststore; never commit
 backend/<module>/Dockerfile           # module container when Compose needs it
 frontend/<workspace>/Dockerfile       # frontend container when Compose needs it
 ```
