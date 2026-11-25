@@ -1,24 +1,52 @@
 ---
 name: Feature
 about: A user-facing or system capability
-title: "feat(<scope>): "
+title: "[NN] feat(<scope>): "
 labels: feat
 ---
 
-## Description
-<!-- What should the system be able to do, and why? -->
+# [NN] feat(<scope>): <short summary>
 
-## Acceptance criteria
+- Points: <estimate> (effort estimate)
+- Labels: feat, <service/domain labels>, rubric (when applicable)
+- Depends on: <issue links, or None>
+
+**Context**\
+<!-- Explain the current behavior or architecture boundary and why this work is needed. -->
+
+**What to do**\
+<!-- State the feature to implement. -->
+
+**Files/folders to touch**
+
+**Create**
+
+- <!-- New paths -->
+
+**Modify**
+
+- <!-- Existing paths -->
+
+**Review**
+
+- <!-- Related paths to inspect for consistency -->
+
+**API contract**\
+<!-- Endpoints, events, or public behavior. Write None if there is no contract change. -->
+
+**Business rules**\
+<!-- Ownership, validation, authorization, and other invariants. -->
+
+**Acceptance criteria**
+
 - [ ]
 - [ ]
 
-## Services / modules affected
-<!-- e.g. work-management-service, notification-service, frontend/team -->
+**How to check it's done**\
+<!-- Commands or documented manual steps. -->
 
-## Rubric item
-<!-- REST API / load balancing / RabbitMQ / Kafka / FaaS / web app + notifications / micro frontend / containers / docs / none -->
+**Guide**\
+<!-- Relevant docs and implementation guides. -->
 
-## Technical notes
-<!-- Endpoints, topics/queues, data model, links to docs -->
-
-## Out of scope
+**Out of scope**\
+<!-- State related work that should remain for a separate issue. -->
