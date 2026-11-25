@@ -17,3 +17,17 @@ Project setup and documentation phase. See the [roadmap](docs/project/roadmap.md
 ## CI and main branch
 
 The GitHub Actions workflow keeps the aggregate **`CI / ci`** status check available while backend and frontend modules are added. Require this check before merging to `main`; see the [Git workflow and branch protection guide](docs/development/git-workflow.md). Jobs for absent modules are skipped; when frontend CI starts, it requires a lockfile and lint/build scripts.
+
+## Local infrastructure dependencies
+
+Start the PostgreSQL, RabbitMQ, and authenticated Kafka dependencies with Docker Compose:
+
+```bash
+cp .env.example .env
+./scripts/generate-kafka-certs.sh
+docker compose config
+docker compose up -d
+docker compose ps
+```
+
+The generated Kafka TLS files stay under the ignored `.local/` directory. See the [Compose guide](docs/deployment/compose.md) for connection details and shutdown instructions. This Compose file currently starts dependencies only; application containers are added in a later issue.
