@@ -81,9 +81,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate compose file
-        run: docker compose config -q
+        run: docker compose --env-file .env.example config -q
       - name: Build images
-        run: docker compose build
+        run: docker compose --env-file .env.example build
 
   # Keep one required check available even while optional modules are absent.
   ci:
