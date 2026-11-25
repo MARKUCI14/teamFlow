@@ -1,6 +1,23 @@
 spring:
   application:
     name: user-service
+  datasource:
+    url: ${USER_DB_URL:jdbc:postgresql://localhost:5432/teamflow}
+    username: ${USER_DB_USERNAME:teamflow}
+    password: ${USER_DB_PASSWORD:change-me-locally}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+
+teamflow:
+  security:
+    issuer: ${JWT_ISSUER:http://localhost:8081}
+    access-token-ttl: ${JWT_ACCESS_TOKEN_TTL:PT15M}
+    private-key: ${JWT_PRIVATE_KEY_PATH:}
+    public-key: ${JWT_PUBLIC_KEY_PATH:}
 
 server:
   port: ${SERVER_PORT:8081}

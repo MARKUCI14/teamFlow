@@ -5,5 +5,14 @@ plugins {
 dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.webmvc
+    implementation libs.spring.boot.starter.data.jpa
+    implementation libs.spring.boot.starter.validation
+    implementation libs.spring.boot.starter.security
+    implementation libs.spring.boot.starter.oauth2.resource.server
+    implementation libs.spring.security.oauth2.jose
+    implementation libs.spring.boot.starter.flyway
+    implementation libs.flyway.database.postgresql
+    runtimeOnly libs.postgresql
+    testRuntimeOnly 'com.h2database:h2'
     implementation project(':common')
 }

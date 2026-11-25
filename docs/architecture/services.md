@@ -6,7 +6,7 @@ TeamFlow has four internal microservices. The API gateway is the public edge; th
 |---|---:|---|---|
 | nginx | 80/443 | routing | web app, `/api`, `/ws`; load-balances gateway replicas |
 | api-gateway | 8080 | no business data | secured public REST routing and JWKS validation |
-| user-service | 8081 | accounts, credentials, global roles, refresh sessions, signing keys | `/api/auth/**`, `/api/users/**`, JWKS |
+| user-service | 8081 | accounts, credentials, global roles, signing keys | `/api/auth/**`, `/api/users/**`, JWKS |
 | work-management-service | 8082 | projects, memberships, submissions, issues, comments, work logs | `/api/projects/**`, `/api/submissions/**`, `/api/issues/**`, `/api/worklogs/**`; publishes workflow events |
 | notification-service | 8083 | live WebSocket sessions | `/ws`; consumes Kafka events and sends STOMP updates |
 | report-service | 8084 | report requests, job state, result metadata | `/api/reports/**`; sends RabbitMQ `reports.generate` commands |

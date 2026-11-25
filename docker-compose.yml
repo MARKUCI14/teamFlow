@@ -14,6 +14,31 @@ services:
       retries: 5
       start_period: 10s
 
+  user-service:
+    image: teamflow-user-service:local
+    build:
+      context: ./backend
+      dockerfile: user-service/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 8081
+      USER_DB_URL: ${USER_DB_URL:-jdbc:postgresql://postgres:5432/teamflow}
+      USER_DB_USERNAME: ${USER_DB_USERNAME:-${POSTGRES_USER}}
+      USER_DB_PASSWORD: ${USER_DB_PASSWORD:-${POSTGRES_PASSWORD}}
+      JWT_ISSUER: ${JWT_ISSUER:-http://user-service:8081}
+      JWT_ACCESS_TOKEN_TTL: ${JWT_ACCESS_TOKEN_TTL:-PT15M}
+      JWT_PRIVATE_KEY_PATH: /run/secrets/teamflow-jwt-private.pem
+      JWT_PUBLIC_KEY_PATH: /run/secrets/teamflow-jwt-public.pem
+    secrets:
+      - source: user_jwt_private_key
+        target: teamflow-jwt-private.pem
+      - source: user_jwt_public_key
+        target: teamflow-jwt-public.pem
+    ports:
+      - "127.0.0.1:8081:8081"
+
   rabbitmq:
     image: rabbitmq:4.4.1-management
     environment:
@@ -80,3 +105,9 @@ services:
       timeout: 10s
       retries: 10
       start_period: 40s
+
+secrets:
+  user_jwt_private_key:
+    file: ./.local/jwt-keys/private.pem
+  user_jwt_public_key:
+    file: ./.local/jwt-keys/public.pem

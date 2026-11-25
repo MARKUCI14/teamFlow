@@ -1,32 +1,29 @@
 # User Service Guide
 
 ## Purpose
-Owns user accounts, credentials, global roles, login/refresh sessions, and signing keys. It issues JWTs; other services validate them as resource servers. Project memberships and project-scoped roles are owned by work-management-service.
+Owns user accounts, credentials, global roles, and signing keys. It issues short-lived RS256 JWTs; other services validate them as resource servers. Project memberships and project-scoped roles are owned by work-management-service. Refresh sessions are outside the current API.
 
-## Planned module files
+## Module files
 
 | Path (under `backend/user-service/`) | Responsibility |
 |---|---|
 | `build.gradle` | MVC, security, JPA, PostgreSQL, Flyway, validation, JWT signing, Actuator, and tests. |
 | `UserServiceApplication.java` | Spring Boot entry point. |
-| `api/AuthController.java` | Register, login, refresh, and logout endpoints. |
-| `api/UserController.java` | Current-user profile and admin user listing endpoints. |
-| `api/dto/` | Validated auth/profile request and response DTOs; never expose entities. |
-| `application/RegistrationService.java` | Creates a user, hashes the password, and assigns the default role. |
-| `application/AuthenticationService.java` | Checks credentials and creates/rotates/revokes refresh sessions. |
-| `application/TokenService.java` | Creates short-lived access JWTs and exposes the public-key set for JWKS. |
-| `domain/User.java` | User identity, email, password hash, role, and account status. |
-| `domain/RefreshSession.java` | Hashed refresh-token state, expiry, rotation, and revocation rules. |
-| `infrastructure/persistence/` | User and refresh-session JPA entities/repositories and domain mappings. |
-| `infrastructure/security/PasswordEncoderConfig.java` | BCrypt password encoder configuration. |
-| `infrastructure/security/SigningKeyProvider.java` | Loads private/public signing keys from mounted secret/configuration. |
-| `config/SecurityConfig.java` | Public auth/JWKS access and role protection for user endpoints. |
+| `api/AuthController.java` | Registration and login endpoints. |
+| `api/UserController.java` | Current-user profile endpoint. |
+| `application/AuthService.java` | Registers accounts, checks credentials, and issues access JWTs. |
+| `domain/User.java` | User identity, email, password hash, and optional global role. |
+| `infrastructure/UserRepository.java` | User persistence. |
+| `infrastructure/security/SigningKeys.java` | Loads RSA keys and configures JWT encoding/decoding. |
+| `config/SecurityConfig.java` | Public auth/JWKS access and bearer-token protection for user endpoints. |
 | `resources/application.yml` | Database, token lifetimes, key path, issuer, and actuator placeholders. |
-| `resources/db/migration/V1__users_and_refresh_sessions.sql` | Creates user and refresh-session tables and constraints. |
+| `resources/db/migration/V1__users.sql` | Creates the user-owned account table and constraints. |
 | `Dockerfile` | Non-root runtime image. |
-| `src/test/...` | Registration, token rotation, password handling, authorization, and repository tests. |
+| `src/test/...` | Registration, password handling, token/JWKS validation, and authorization tests. |
 
 ## Public contract
-`POST /api/auth/register`, `/login`, `/refresh`, `/logout`; `GET /api/users/me`; `GET /.well-known/jwks.json`. The gateway routes the JWKS endpoint without authentication. Passwords and refresh tokens are never stored or logged in plaintext.
+`POST /api/auth/register`, `/login`; `GET /api/users/me`; `GET /.well-known/jwks.json`. Configure the database and RSA PEM paths with `USER_DB_*` and `JWT_*` environment variables. New accounts have no global role by default. Passwords are BCrypt-hashed and never returned or logged.
+
+Register or log in with JSON containing `email` and `password`. The response contains `accessToken`, `tokenType`, and `expiresIn`; use the token as a bearer token for `/api/users/me`.
 
 See also: [security](../../architecture/security.md), [API reference](../../api/rest-api.md).
