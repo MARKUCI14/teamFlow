@@ -13,7 +13,18 @@
 - Durations are stored as integer minutes; timestamps use `Instant` in UTC.
 - Database changes only through Flyway migrations (`src/main/resources/db/migration/V<n>__desc.sql`); `ddl-auto: validate`.
 - Logging: SLF4J, structured key=value, include `projectId`, `issueId`, `userId`, `eventId` where relevant. No secrets or tokens.
-- Static analysis: Checkstyle, PMD, and SpotBugs run for every Java module as part of `./gradlew check` and `./gradlew build`. The violations task makes findings fail the build; GitHub Actions runs the same build on backend changes.
+
+## Static analysis
+
+Every Java module applies the shared checks from `backend/lint.gradle`. Run them with `cd backend && ./gradlew check` or `./gradlew build` using Java 21, which is the project toolchain target.
+
+| Tool | Version | Configured rules |
+|---|---|---|
+| Checkstyle | 10.12.4 | Modified Google Java Style with four-space indentation and a 120-character Java line limit. See [`backend/checkstyle.xml`](../../backend/checkstyle.xml). |
+| PMD | 7.7.0 on Java versions above 17; otherwise 6.45.0 | Uses the selected rules from best-practices, code-style, design, documentation, error-prone, multithreading, performance, and security categories, with project exclusions and overrides. See [`backend/pmd-ruleset.xml`](../../backend/pmd-ruleset.xml). |
+| SpotBugs | 4.9.4 | Runs at maximum effort with the report threshold set to low confidence; known patterns are excluded by the project filter. See [`backend/spotbugs-filter.xml`](../../backend/spotbugs-filter.xml). |
+
+The `violations` task combines all three reports. The analyzers are configured to continue after findings so the combined report can be produced, but the aggregate fails the build for any finding at `INFO` severity or higher (`maxViolations = 0`). The `check` task runs this aggregate, so findings also fail `build` and backend CI.
 
 ## REST conventions
 - Base path `/api/<resource>`, plural nouns, JSON, kebab-case paths, camelCase fields.
