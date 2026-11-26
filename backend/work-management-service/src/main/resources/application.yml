@@ -1,6 +1,30 @@
 spring:
   application:
     name: work-management-service
+  datasource:
+    url: ${WORK_DB_URL:jdbc:postgresql://localhost:5432/teamflow}
+    username: ${WORK_DB_USERNAME:teamflow}
+    password: ${WORK_DB_PASSWORD:change-me-locally}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        default_schema: ${WORK_DB_SCHEMA:work_management}
+  flyway:
+    enabled: true
+    schemas: ${WORK_DB_SCHEMA:work_management}
+    default-schema: ${WORK_DB_SCHEMA:work_management}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER:http://localhost:8081}
+          jwk-set-uri: ${USER_SERVICE_URL:http://localhost:8081}/.well-known/jwks.json
+  mvc:
+    problemdetails:
+      enabled: true
 
 server:
   port: ${SERVER_PORT:8082}

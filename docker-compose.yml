@@ -58,16 +58,6 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
 
-  work-management-service:
-    image: teamflow-work-management-service:local
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-      args:
-        MODULE: work-management-service
-    environment:
-      SERVER_PORT: 8082
-
   notification-service:
     image: teamflow-notification-service:local
     build:
@@ -97,6 +87,27 @@ services:
         MODULE: report-function
     environment:
       SERVER_PORT: 8085
+
+  work-management-service:
+    image: teamflow-work-management-service:local
+    build:
+      context: ./backend
+      dockerfile: work-management-service/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+    environment:
+      SERVER_PORT: 8082
+      WORK_DB_URL: ${WORK_DB_URL:-jdbc:postgresql://postgres:5432/teamflow}
+      WORK_DB_USERNAME: ${WORK_DB_USERNAME:-${POSTGRES_USER}}
+      WORK_DB_PASSWORD: ${WORK_DB_PASSWORD:-${POSTGRES_PASSWORD}}
+      WORK_DB_SCHEMA: ${WORK_DB_SCHEMA:-work_management}
+      JWT_ISSUER: ${JWT_ISSUER:-http://user-service:8081}
+      USER_SERVICE_URL: http://user-service:8081
+    ports:
+      - "127.0.0.1:8082:8082"
 
   rabbitmq:
     image: rabbitmq:4.4.1-management

@@ -11,11 +11,15 @@ The API gateway routes auth and user endpoints to user-service, project/submissi
 | POST | `/api/auth/register`, `/api/auth/login` | Create account / receive tokens | Public |
 | GET | `/api/users/me` | Current user and roles | Any authenticated |
 | GET | `/.well-known/jwks.json` | Public RS256 signing keys | Public |
-| GET | `/api/projects` | List accessible projects | Authenticated; returns accessible projects only |
-| POST | `/api/projects` | Create project | Admin or PM; creator receives project membership |
-| GET | `/api/projects/{id}` | View project | Project member, subject to project visibility |
-| PATCH | `/api/projects/{id}` | Update project | Project PM / Admin |
-| POST | `/api/projects/{id}/members` | Add project member with role | Project PM / Admin |
+| GET | `/api/projects` | List the caller's projects (paginated) | Project member; returns projects where the caller is a member |
+| POST | `/api/projects` | Create a project | Global Admin or a user who is already a PM; creator becomes a PM member |
+| GET | `/api/projects/{id}` | View project details | Project member; non-members receive 404 |
+| PATCH | `/api/projects/{id}` | Update project name or description | Project PM or a global Admin who is a project member |
+| POST | `/api/projects/{id}/members` | Add a member with a project role | Project PM or global Admin |
+
+Project creation accepts `{"name":"TeamFlow","description":"Optional description"}`. The name is required. `PATCH /api/projects/{id}` accepts either or both fields; omitted fields are unchanged. Membership creation accepts `{"userId":"<account-uuid>","role":"DEVELOPER"}`. Roles are `PROJECT_MANAGER`, `STAKEHOLDER`, and `DEVELOPER`. A project has one membership per user; attempting to add a duplicate returns 409. The `userId` is stored as an account reference owned by user-service; work-management-service does not read the user-service database or verify account existence.
+
+All project members can list and read their projects. A global Admin who is not a member cannot read project data; an Admin can create projects and add members. Authenticated users without permission to create projects receive 403. Unknown projects and projects the caller is not a member of return 404.
 
 ## Stakeholder submissions
 

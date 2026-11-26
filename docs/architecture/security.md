@@ -9,7 +9,7 @@ user-service issues short-lived RS256 JWTs and publishes JWKS at `/.well-known/j
 - Stakeholders can read permitted project status and create/view their own submissions in projects where they hold that membership role.
 - Developers can access assigned issues, update allowed fields, comment, and create their own work logs in projects where they hold that membership role.
 
-Each owning service enforces role and resource scope. work-management-service checks project membership for projects, submissions, issues, and work logs. Never trust a user ID supplied in a request body as proof of identity.
+Each owning service enforces role and resource scope. work-management-service derives the caller identity from the validated JWT subject and checks project membership for project data. A `userId` in a membership request identifies the account to add; it is not used as the caller identity. Never trust a user ID supplied in a request body as proof of identity.
 
 ## Layers
 
