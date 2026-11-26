@@ -12,22 +12,35 @@ The target architecture uses four Java Spring Boot microservices, secured REST, 
 
 ## Status
 
-Project setup and documentation phase. See the [roadmap](docs/project/roadmap.md).
+Implementation is ongoing. See the [roadmap](docs/project/roadmap.md) for feature status and upcoming work.
 
 ## CI and main branch
 
-The GitHub Actions workflow keeps the aggregate **`CI / ci`** status check available while backend and frontend modules are added. Require this check before merging to `main`; see the [Git workflow and branch protection guide](docs/development/git-workflow.md). Jobs for absent modules are skipped; when frontend CI starts, it requires a lockfile and lint/build scripts.
+The GitHub Actions workflow keeps the aggregate **`CI / ci`** status check available across backend, frontend, and Compose checks. Require this check before merging to `main`; see the [Git workflow and branch protection guide](docs/development/git-workflow.md). The frontend check uses `npm ci`, lint, tests, and build.
 
-## Local infrastructure dependencies
+## Local backend stack
 
-Start the PostgreSQL, RabbitMQ, and authenticated Kafka dependencies with Docker Compose:
+Start the backend applications and PostgreSQL, RabbitMQ, and authenticated Kafka dependencies with Docker Compose:
 
 ```bash
 cp .env.example .env
+./scripts/generate-jwt-keys.sh
 ./scripts/generate-kafka-certs.sh
 docker compose config
 docker compose up -d
 docker compose ps
 ```
 
-The generated Kafka TLS files stay under the ignored `.local/` directory. See the [Compose guide](docs/deployment/compose.md) for connection details and shutdown instructions. This Compose file currently starts dependencies only; application containers are added in a later issue.
+The generated JWT keys and Kafka TLS files stay under the ignored `.local/` directory. See the [Compose guide](docs/deployment/compose.md) for connection details and shutdown instructions.
+
+## Frontend shell
+
+The React shell, stakeholder remote, and team remote run locally with:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`; the shell expects the API gateway at `http://localhost:8080` and the notification WebSocket at `ws://localhost:8083/ws`. See the [frontend guide](docs/frontend/guide.md) for environment overrides and checks.
