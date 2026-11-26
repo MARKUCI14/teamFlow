@@ -1,6 +1,6 @@
 # Docker Compose
 
-The root Compose file starts the local infrastructure dependencies and the user-service container. Other backend and frontend containers will be added in later issues.
+The root Compose file starts the local infrastructure dependencies, user-service, and work-management-service. The API gateway is not part of this Compose setup; the backend services can be reached directly on their local ports.
 
 ## Start
 
@@ -17,15 +17,16 @@ docker compose ps
 
 Compose interpolates credentials from `.env`. Do not commit that file. The JWT script creates an RSA private/public key pair under ignored `.local/jwt-keys/`; Compose mounts the keys into user-service as read-only secrets. These keys are only for local development. Kafka uses SASL/PLAIN over TLS; its self-signed keystore, truststore, and password files are generated under ignored `.local/kafka-certs/`. The certificate covers the internal `kafka` hostname and host-side `localhost` address. Do not put real or production credentials in `.env`.
 
-To start only PostgreSQL and user-service for an auth check, run `docker compose up -d user-service`. Compose waits for PostgreSQL's health check before starting user-service. Flyway creates the user-service tables on startup.
+Compose waits for PostgreSQL's health check before starting either backend service. Flyway creates each service's schema on startup. Work-management-service uses the `work_management` schema and retrieves JWT signing keys from user-service over the Compose network.
 
 ## Test user-service
 
-The API is available directly at `http://localhost:8081` (the gateway is not part of this Compose setup). Check health and request the public signing keys:
+The APIs are available directly at `http://localhost:8081` for user-service and `http://localhost:8082` for work-management-service. Check health and request the public signing keys:
 
 ```bash
 curl -fsS http://localhost:8081/actuator/health
 curl -fsS http://localhost:8081/.well-known/jwks.json
+curl -fsS http://localhost:8082/actuator/health
 ```
 
 Register and capture an access token, then request the current-user endpoint:
@@ -40,6 +41,13 @@ curl -fsS http://localhost:8081/api/users/me -H "Authorization: Bearer $access_t
 
 Login uses the same JSON fields at `/api/auth/login`. Registration returns 201; using an already registered email returns 409. Invalid login credentials return 401. `jq` is used above only to extract the token from the JSON response.
 
+Use the captured access token to call work-management-service directly. For example, list accessible projects with:
+
+```bash
+curl -fsS http://localhost:8082/api/projects \
+  -H "Authorization: Bearer $access_token"
+```
+
 ## Local endpoints
 
 All published ports bind to localhost:
@@ -48,6 +56,7 @@ All published ports bind to localhost:
 |---|---|---|
 | PostgreSQL | `localhost:5432`, database `teamflow` | `pg_isready` |
 | user-service | `http://localhost:8081` | `GET /actuator/health` |
+| work-management-service | `http://localhost:8082` | `GET /actuator/health` |
 | RabbitMQ | `localhost:5672`; management UI `http://localhost:15672` | `rabbitmq-diagnostics ping` |
 | Kafka | `localhost:9094` (SASL/PLAIN + TLS) | Authenticated Kafka broker API request |
 
