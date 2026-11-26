@@ -34,6 +34,24 @@ jobs:
     needs: detect
     if: needs.detect.outputs.backend == 'true'
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18.7
+        env:
+          POSTGRES_DB: teamflow
+          POSTGRES_USER: teamflow
+          POSTGRES_PASSWORD: ci-test-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U teamflow -d teamflow"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      WORK_DB_URL: jdbc:postgresql://localhost:5432/teamflow
+      WORK_DB_USERNAME: teamflow
+      WORK_DB_PASSWORD: ci-test-password
     defaults:
       run:
         working-directory: backend
