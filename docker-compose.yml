@@ -58,16 +58,6 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
 
-  work-management-service:
-    image: teamflow-work-management-service:local
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-      args:
-        MODULE: work-management-service
-    environment:
-      SERVER_PORT: 8082
-
   notification-service:
     image: teamflow-notification-service:local
     build:
