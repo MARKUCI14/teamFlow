@@ -2,21 +2,21 @@
 
 ## Authentication and authorization
 
-user-service issues short-lived RS256 JWTs and publishes JWKS at `/.well-known/jwks.json`. Tokens identify the user and carry global roles when assigned. `PROJECT_MANAGER`, `STAKEHOLDER`, and `DEVELOPER` are project-scoped membership roles, not global JWT roles. work-management-service remains authoritative for project membership and resource access. user-service validates bearer tokens on its protected endpoints; gateway-wide JWT enforcement is not yet implemented.
+user-service issues short-lived RS256 JWTs and publishes JWKS at `/.well-known/jwks.json`. Tokens identify the user and carry global roles when assigned. `PROJECT_MANAGER`, `STAKEHOLDER`, and `DEVELOPER` are project-scoped membership roles, not global JWT roles. user-service validates bearer tokens on its protected endpoints, and work-management-service validates bearer-token signatures against user-service JWKS before checking membership and resource access. Gateway-wide JWT enforcement is tracked separately in issue #47.
 
 - Admin manages accounts, global roles, projects, and project membership.
 - Project managers manage the projects where they hold that membership role: triage submissions, create/assign issues, review logs, and request reports.
 - Stakeholders can read permitted project status and create/view their own submissions in projects where they hold that membership role.
 - Developers can access assigned issues, update allowed fields, comment, and create their own work logs in projects where they hold that membership role.
 
-Each owning service enforces role and resource scope. work-management-service checks project membership for projects, submissions, issues, and work logs. Never trust a user ID supplied in a request body as proof of identity.
+Each owning service enforces role and resource scope. work-management-service derives the caller identity from the validated JWT subject and checks project membership for project data. A `userId` in a membership request identifies the account to add; it is not used as the caller identity. Never trust a user ID supplied in a request body as proof of identity.
 
 ## Layers
 
-1. nginx terminates TLS and exposes only web, `/api`, and `/ws` routes.
-2. api-gateway validates JWTs, applies CORS, and strips spoofable identity headers.
-3. user-service, work-management-service, and report-service validate JWTs too, so bypassing the gateway does not bypass authorization. notification-service authenticates STOMP CONNECT frames.
-4. Internal endpoints are not routed publicly and require service authentication.
+1. nginx is the planned TLS edge for the web app, public REST API, and WebSocket route.
+2. api-gateway is the public REST edge; JWT enforcement and CORS are tracked in issue #47.
+3. user-service and work-management-service validate JWTs directly. Other owning services must validate tokens when their protected APIs are implemented. notification-service authenticates STOMP CONNECT frames.
+4. Internal service endpoints remain private and are not routed through the public API.
 
 ## WebSockets and secrets
 
