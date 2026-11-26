@@ -36,8 +36,67 @@ services:
         target: teamflow-jwt-private.pem
       - source: user_jwt_public_key
         target: teamflow-jwt-public.pem
+
+  api-gateway:
+    image: teamflow-api-gateway:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        MODULE: api-gateway
+    depends_on:
+      - user-service
+      - work-management-service
+      - report-service
+    environment:
+      SERVER_PORT: 8080
+      JWT_ISSUER: ${JWT_ISSUER:-http://user-service:8081}
+      USER_SERVICE_URL: http://user-service:8081
+      WORK_MANAGEMENT_SERVICE_URL: http://work-management-service:8082
+      REPORT_SERVICE_URL: http://report-service:8084
+      GATEWAY_CORS_ALLOWED_ORIGINS: ${GATEWAY_CORS_ALLOWED_ORIGINS:-http://localhost:5173}
     ports:
-      - "127.0.0.1:8081:8081"
+      - "127.0.0.1:8080:8080"
+
+  work-management-service:
+    image: teamflow-work-management-service:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        MODULE: work-management-service
+    environment:
+      SERVER_PORT: 8082
+
+  notification-service:
+    image: teamflow-notification-service:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        MODULE: notification-service
+    environment:
+      SERVER_PORT: 8083
+
+  report-service:
+    image: teamflow-report-service:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        MODULE: report-service
+    environment:
+      SERVER_PORT: 8084
+
+  report-function:
+    image: teamflow-report-function:local
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        MODULE: report-function
+    environment:
+      SERVER_PORT: 8085
 
   work-management-service:
     image: teamflow-work-management-service:local

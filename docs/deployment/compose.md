@@ -1,6 +1,6 @@
 # Docker Compose
 
-The root Compose file starts the local infrastructure dependencies, user-service, and work-management-service. The API gateway is not part of this Compose setup; the backend services can be reached directly on their local ports.
+The root Compose file starts the local infrastructure, all current backend applications, and the API gateway. The repository does not yet contain frontend source or nginx configuration, so those are not part of this Compose stack.
 
 ## Start
 
@@ -19,25 +19,33 @@ Compose interpolates credentials from `.env`. Do not commit that file. The JWT s
 
 Compose waits for PostgreSQL's health check before starting either backend service. Flyway creates each service's schema on startup. Work-management-service uses the `work_management` schema and retrieves JWT signing keys from user-service over the Compose network.
 
-## Test user-service
+## Test the public API through the gateway
 
 The APIs are available directly at `http://localhost:8081` for user-service and `http://localhost:8082` for work-management-service. Check health and request the public signing keys:
 
+## TODO: edit this!
 ```bash
 curl -fsS http://localhost:8081/actuator/health
 curl -fsS http://localhost:8081/.well-known/jwks.json
 curl -fsS http://localhost:8082/actuator/health
+The public API is available at `http://localhost:8080`; user-service is reachable only on the internal Compose network. Check gateway health and request the public signing keys through the gateway:
+
+```bash
+curl -fsS http://localhost:8080/actuator/health
+curl -fsS http://localhost:8080/.well-known/jwks.json
 ```
 
 Register and capture an access token, then request the current-user endpoint:
 
 ```bash
-register_response=$(curl -fsS -X POST http://localhost:8081/api/auth/register \
+register_response=$(curl -fsS -X POST http://localhost:8080/api/auth/register \
   -H 'Content-Type: application/json' \
   -d '{"email":"student@example.com","password":"correct-horse-battery"}')
 access_token=$(printf '%s' "$register_response" | jq -r '.accessToken')
-curl -fsS http://localhost:8081/api/users/me -H "Authorization: Bearer $access_token"
+curl -fsS http://localhost:8080/api/users/me -H "Authorization: Bearer $access_token"
 ```
+
+An unauthenticated request to `/api/users/me` should return `401`. The work-management and report applications are currently starter services; their containers run, but business endpoints are not implemented yet.
 
 Login uses the same JSON fields at `/api/auth/login`. Registration returns 201; using an already registered email returns 409. Invalid login credentials return 401. `jq` is used above only to extract the token from the JSON response.
 
@@ -57,10 +65,11 @@ All published ports bind to localhost:
 | PostgreSQL | `localhost:5432`, database `teamflow` | `pg_isready` |
 | user-service | `http://localhost:8081` | `GET /actuator/health` |
 | work-management-service | `http://localhost:8082` | `GET /actuator/health` |
+| API gateway | `http://localhost:8080` | `GET /actuator/health` |
 | RabbitMQ | `localhost:5672`; management UI `http://localhost:15672` | `rabbitmq-diagnostics ping` |
 | Kafka | `localhost:9094` (SASL/PLAIN + TLS) | Authenticated Kafka broker API request |
 
-Containers on the Compose network use `postgres:5432`, `rabbitmq:5672`, and `kafka:9092`. For Kafka host clients, use `localhost:9094` with SASL/PLAIN and the generated truststore. Example credentials are in `.env.example` and should only be used locally.
+Backend containers communicate by Compose service names. Containers on the Compose network use `postgres:5432`, `rabbitmq:5672`, and `kafka:9092`. For Kafka host clients, use `localhost:9094` with SASL/PLAIN and the generated truststore. Example credentials are in `.env.example` and should only be used locally.
 
 This setup provides one PostgreSQL instance for the local stack. user-service owns its account table and applies its schema through Flyway. Other stateful services must keep their own schemas or databases as described in the [service catalog](../architecture/services.md).
 

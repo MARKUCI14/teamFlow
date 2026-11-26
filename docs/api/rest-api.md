@@ -2,7 +2,7 @@
 
 All public requests go through nginx and api-gateway. Except auth, JWKS, and health, APIs require a JWT. `ADMIN` is a global role. `PROJECT_MANAGER`, `STAKEHOLDER`, and `DEVELOPER` are project membership roles checked by work-management-service for the project being accessed. IDs are UUIDs; list endpoints are paginated. `PM` below means a member with the project-scoped `PROJECT_MANAGER` role; `Admin` means global `ADMIN`.
 
-The gateway routes auth and user endpoints to user-service, project/submission/issue/work-log endpoints to work-management-service, report endpoints to report-service, and `/ws` to notification-service. Registration and login return `accessToken`, `tokenType`, and `expiresIn` (seconds). Send the token as `Authorization: Bearer <accessToken>`.
+The API gateway routes auth and user endpoints to user-service, project/submission/issue/work-log endpoints to work-management-service, and report endpoints to report-service. The `/ws` WebSocket path is separate from these REST gateway routes and requires its own notification proxy. Registration and login return `accessToken`, `tokenType`, and `expiresIn` (seconds). Send the token as `Authorization: Bearer <accessToken>`.
 
 ## Authentication and projects
 
