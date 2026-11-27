@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -45,7 +46,7 @@ public class SubmissionEventPublisher {
             });
         } catch (JsonProcessingException exception) {
             LOGGER.error("Could not serialize SubmissionCreated for {}", submission.getId(), exception);
-        } catch (RuntimeException exception) {
+        } catch (KafkaException exception) {
             LOGGER.error("Could not enqueue SubmissionCreated for {}", submission.getId(), exception);
         }
     }

@@ -1,13 +1,12 @@
 package edu.portikmark.teamflow.workmanagement.config;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -19,6 +18,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 @ConditionalOnProperty(name = "teamflow.kafka.enabled", havingValue = "true", matchIfMissing = true)
+@EnableConfigurationProperties(KafkaProducerSettings.class)
 public class KafkaProducerConfig {
 
     @Bean
@@ -27,23 +27,20 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public ProducerFactory<String, String> producerFactory(
-            @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
-            @Value("${KAFKA_USERNAME:teamflow}") String username,
-            @Value("${KAFKA_PASSWORD:change-me-locally}") String password,
-            @Value("${KAFKA_SSL_TRUSTSTORE_LOCATION:.local/kafka-certs/kafka.truststore.jks}") String truststore,
-            @Value("${KAFKA_TLS_PASSWORD:change-me-locally}") String truststorePassword) {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        properties.put("security.protocol", "SASL_SSL");
-        properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
-        properties.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required "
-                + "username=\"" + username + "\" password=\"" + password + "\";");
-        properties.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, truststore);
-        properties.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, truststorePassword);
-        properties.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "JKS");
+    @SuppressWarnings("PMD.UseObjectForClearerAPI")
+    public ProducerFactory<String, String> producerFactory(KafkaProducerSettings settings) {
+        String jaasConfig = "org.apache.kafka.common.security.plain.PlainLoginModule required "
+                + "username=\"" + settings.username() + "\" password=\"" + settings.password() + "\";";
+        Map<String, Object> properties = Map.ofEntries(
+                Map.entry(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, settings.bootstrapServers()),
+                Map.entry(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class),
+                Map.entry(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class),
+                Map.entry("security.protocol", "SASL_SSL"),
+                Map.entry(SaslConfigs.SASL_MECHANISM, "PLAIN"),
+                Map.entry(SaslConfigs.SASL_JAAS_CONFIG, jaasConfig),
+                Map.entry(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, settings.sslTruststoreLocation()),
+                Map.entry(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, settings.tlsPassword()),
+                Map.entry(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "JKS"));
         return new DefaultKafkaProducerFactory<>(properties);
     }
 

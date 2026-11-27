@@ -134,9 +134,13 @@ public class SubmissionApplicationService {
     }
 
     private UUID userId(Jwt principal) {
+        String subject = principal.getSubject();
+        if (subject == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token subject must be a user UUID");
+        }
         try {
-            return UUID.fromString(principal.getSubject());
-        } catch (IllegalArgumentException | NullPointerException exception) {
+            return UUID.fromString(subject);
+        } catch (IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token subject must be a user UUID");
         }
     }

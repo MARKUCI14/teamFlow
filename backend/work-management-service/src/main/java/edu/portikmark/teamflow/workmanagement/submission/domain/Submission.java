@@ -61,7 +61,10 @@ public class Submission {
 
     public void triage(SubmissionStatus status, String clarificationMessage) {
         this.status = status;
-        this.clarificationMessage = clarificationMessage == null ? null : clarificationMessage.trim();
+        this.clarificationMessage = clarificationMessage;
+        if (this.clarificationMessage != null) {
+            this.clarificationMessage = this.clarificationMessage.trim();
+        }
         this.updatedAt = Instant.now();
     }
 

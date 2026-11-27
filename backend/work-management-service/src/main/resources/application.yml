@@ -25,13 +25,15 @@ spring:
   mvc:
     problemdetails:
       enabled: true
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
-
 teamflow:
   kafka:
     enabled: ${KAFKA_ENABLED:true}
     submissions-topic: ${KAFKA_SUBMISSIONS_TOPIC:submissions.events}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
+    username: ${KAFKA_USERNAME:teamflow}
+    password: ${KAFKA_PASSWORD:change-me-locally}
+    ssl-truststore-location: ${KAFKA_SSL_TRUSTSTORE_LOCATION:.local/kafka-certs/kafka.truststore.jks}
+    tls-password: ${KAFKA_TLS_PASSWORD:change-me-locally}
 
 server:
   port: ${SERVER_PORT:8082}
