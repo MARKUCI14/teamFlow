@@ -1,28 +1,26 @@
-## Summary
-<!-- What does this PR do and why? 1-3 sentences. -->
+## What does this PR do?
 
-Closes #<issue>
+<!-- Summarize the change and why it is needed. -->
 
-## Type
-- [ ] feat  - [ ] fix  - [ ] docs  - [ ] refactor  - [ ] test  - [ ] chore/infra
+Closes #<issue-number>
 
-## Changes
-<!-- Bullet list of the main changes. Mention affected services/modules. -->
--
+## How to test it
 
-## How to test
-<!-- Commands or steps a reviewer can run. -->
-```bash
+<!-- List the commands or steps used to verify this change. -->
 
-```
+1.
+
+## Screenshots (UI or diagram changes)
+
+<!-- Add screenshots when this PR changes the UI or diagrams. -->
 
 ## Checklist
-- [ ] Builds locally (`./gradlew build` / `npm run build`) and tests pass
-- [ ] New/changed logic has tests (unit and/or Testcontainers)
-- [ ] Endpoints are secured and documented (OpenAPI, `docs/api/rest-api.md`)
-- [ ] Message/event schema changes are backward compatible (`docs/architecture/messaging.md`)
-- [ ] Docs/diagrams updated (`docs/`) where behavior or architecture changed
-- [ ] No secrets, tokens, or hard-coded hosts committed
-- [ ] Rubric item(s) touched: <!-- e.g. Kafka, RabbitMQ, load balancing, FaaS, none -->
 
-## Screenshots / logs (optional)
+- [ ] Branch follows the project convention: `feat/<issue-number>-short-name`, `fix/<issue-number>-short-name`, or `docs/<issue-number>-short-name`.
+- [ ] Commits follow Conventional Commits (`feat:`, `fix:`, `docs:`, and similar types).
+- [ ] Relevant checks pass locally: `cd backend && ./gradlew build` and/or `cd frontend && npm run lint && npm test && npm run build`.
+- [ ] New or changed behavior has tests, or is marked N/A for documentation or design changes.
+- [ ] If the database schema changes, this adds a new Flyway migration and does not edit an applied migration.
+- [ ] No secrets are committed; `.env.example` contains placeholders only.
+- [ ] Documentation is updated when needed (`README.md`, `docs/`, or API/OpenAPI annotations).
+- [ ] If using the project board, the issue is moved to **In Review**.
