@@ -16,7 +16,7 @@ Implementation is ongoing. See the [roadmap](docs/project/roadmap.md) for featur
 
 ## CI and main branch
 
-The GitHub Actions workflow keeps the aggregate **`CI / ci`** status check available across backend, frontend, and Compose checks. Require this check before merging to `main`; see the [Git workflow and branch protection guide](docs/development/git-workflow.md). The frontend check uses `npm ci`, lint, tests, and build.
+The GitHub Actions workflow keeps the aggregate **`CI / ci`** status check available when individual jobs are skipped. Require this check before merging to `main`; see the [Git workflow and branch protection guide](docs/development/git-workflow.md). Pull requests run backend and frontend checks only when files under `backend/` or `frontend/` change. Compose configuration is validated when Compose, environment, script, or Dockerfile files change. Full Compose image builds run on every push to `main`; to run one manually, use **Actions → CI → Run workflow**. A manual run only builds the Compose images. The frontend check uses npm caching, `npm ci`, lint, tests, and build.
 
 ## Local backend stack
 
