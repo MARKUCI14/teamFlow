@@ -7,46 +7,53 @@ labels: feat
 
 # [NN] feat(<scope>): <short summary>
 
-- Points: <estimate> (effort estimate)
-- Labels: feat, <service/domain labels>, rubric (when applicable)
-- Depends on: <issue links, or None>
+- **Points:** <estimate> (effort estimate)
+- **Labels:** `feat`, relevant service or domain labels, and `rubric` when applicable
+- **Depends on:** issue links or `None`
 
-**Context**\
-<!-- Explain the current behavior or architecture boundary and why this work is needed. -->
+## Context
 
-**What to do**\
-<!-- State the feature to implement. -->
+<!-- Describe the current behavior or architecture boundary and why this work is needed. -->
 
-**Files/folders to touch**
+## What to do
 
-**Create**
+<!-- Describe the capability to implement. -->
 
-- <!-- New paths -->
+## Files/folders to touch
 
-**Modify**
+### Create
+
+- <!-- New paths, or `None` -->
+
+### Modify
 
 - <!-- Existing paths -->
 
-**Review**
+### Review
 
 - <!-- Related paths to inspect for consistency -->
 
-**API contract**\
-<!-- Endpoints, events, or public behavior. Write None if there is no contract change. -->
+## API contract
 
-**Business rules**\
-<!-- Ownership, validation, authorization, and other invariants. -->
+<!-- Describe endpoint, event, or public behavior changes. Write `None` if there is no contract change. -->
 
-**Acceptance criteria**
+## Business rules
+
+<!-- Describe ownership, validation, authorization, and other invariants. -->
+
+## Acceptance criteria
 
 - [ ]
 - [ ]
 
-**How to check it's done**\
-<!-- Commands or documented manual steps. -->
+## How to check it's done
 
-**Guide**\
-<!-- Relevant docs and implementation guides. -->
+<!-- List commands or documented manual steps. -->
 
-**Out of scope**\
-<!-- State related work that should remain for a separate issue. -->
+## Guide
+
+<!-- Link relevant documentation or implementation guides. -->
+
+## Out of scope
+
+<!-- Name related work that should remain for a separate issue. -->
