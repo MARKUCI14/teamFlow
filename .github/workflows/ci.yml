@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -11,28 +16,32 @@ concurrency:
 
 jobs:
   detect:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
-      backend: ${{ steps.check.outputs.backend }}
-      frontend: ${{ steps.check.outputs.frontend }}
-      compose: ${{ steps.check.outputs.compose }}
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      compose: ${{ steps.filter.outputs.compose }}
     steps:
       - uses: actions/checkout@v4
-      - id: check
-        run: |
-          if [ -f backend/gradlew ] \
-            && { [ -f backend/settings.gradle.kts ] || [ -f backend/settings.gradle ]; } \
-            && { [ -f backend/build.gradle.kts ] || [ -f backend/build.gradle ]; }; then
-            echo "backend=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "backend=false" >> "$GITHUB_OUTPUT"
-          fi
-          [ -f frontend/package.json ] && echo "frontend=true" >> "$GITHUB_OUTPUT" || echo "frontend=false" >> "$GITHUB_OUTPUT"
-          [ -f docker-compose.yml ] && echo "compose=true" >> "$GITHUB_OUTPUT" || echo "compose=false" >> "$GITHUB_OUTPUT"
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            compose:
+              - 'docker-compose.yml'
+              - '.env.example'
+              - 'scripts/**'
+              - 'backend/**/Dockerfile'
+              - 'frontend/**/Dockerfile'
 
   backend:
     needs: detect
-    if: needs.detect.outputs.backend == 'true'
+    if: github.event_name == 'pull_request' && needs.detect.outputs.backend == 'true'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -73,7 +82,7 @@ jobs:
 
   frontend:
     needs: detect
-    if: needs.detect.outputs.frontend == 'true'
+    if: github.event_name == 'pull_request' && needs.detect.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -83,6 +92,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - name: Validate frontend build files
         run: |
           test -f package-lock.json || { echo "frontend/package-lock.json is required for npm ci."; exit 1; }
@@ -92,23 +103,32 @@ jobs:
       - run: npm run test --if-present
       - run: npm run build
 
-  containers:
-    needs: [detect, backend, frontend]
-    if: always() && needs.detect.outputs.compose == 'true' && !contains(needs.*.result, 'failure')
+  compose-validation:
+    needs: detect
+    if: github.event_name == 'pull_request' && needs.detect.outputs.compose == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Generate local JWT keys required by Compose configuration
         run: ./scripts/generate-jwt-keys.sh
-      - name: Validate compose file
+      - name: Validate Compose configuration
         run: docker compose --env-file .env.example config -q
-      - name: Build images
+
+  image-build:
+    needs: detect
+    if: always() && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate local JWT keys required by Compose
+        run: ./scripts/generate-jwt-keys.sh
+      - name: Build Compose images
         run: docker compose --env-file .env.example build
 
-  # Keep one required check available even while optional modules are absent.
+  # Keep one required check available even while optional jobs are skipped.
   ci:
     name: ci
-    needs: [detect, backend, frontend, containers]
+    needs: [detect, backend, frontend, compose-validation, image-build]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -117,9 +137,10 @@ jobs:
           DETECT_RESULT: ${{ needs.detect.result }}
           BACKEND_RESULT: ${{ needs.backend.result }}
           FRONTEND_RESULT: ${{ needs.frontend.result }}
-          CONTAINERS_RESULT: ${{ needs.containers.result }}
+          COMPOSE_RESULT: ${{ needs.compose-validation.result }}
+          IMAGE_BUILD_RESULT: ${{ needs.image-build.result }}
         run: |
-          for result in "$DETECT_RESULT" "$BACKEND_RESULT" "$FRONTEND_RESULT" "$CONTAINERS_RESULT"; do
+          for result in "$DETECT_RESULT" "$BACKEND_RESULT" "$FRONTEND_RESULT" "$COMPOSE_RESULT" "$IMAGE_BUILD_RESULT"; do
             if [ "$result" = "failure" ] || [ "$result" = "cancelled" ]; then
               echo "A CI job did not complete successfully."
               exit 1
