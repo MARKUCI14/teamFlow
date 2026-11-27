@@ -1,5 +1,6 @@
 package edu.portikmark.teamflow.workmanagement.membership.infrastructure;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import edu.portikmark.teamflow.workmanagement.membership.domain.ProjectMembership;
@@ -15,4 +16,6 @@ public interface ProjectMembershipRepository extends JpaRepository<ProjectMember
     boolean existsByUserIdAndRole(UUID userId, ProjectRole role);
 
     Optional<ProjectMembership> findByProjectIdAndUserId(UUID projectId, UUID userId);
+
+    List<ProjectMembership> findByProjectIdAndRole(UUID projectId, ProjectRole role);
 }

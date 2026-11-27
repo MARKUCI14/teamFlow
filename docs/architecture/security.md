@@ -6,7 +6,8 @@ user-service issues short-lived RS256 JWTs and publishes JWKS at `/.well-known/j
 
 - Admin manages accounts, global roles, projects, and project membership.
 - Project managers manage the projects where they hold that membership role: triage submissions, create/assign issues, review logs, and request reports.
-- Stakeholders can read permitted project status and create/view their own submissions in projects where they hold that membership role.
+- Stakeholders can read permitted project status and create/view their own submissions in projects where they hold that membership role. They cannot see another stakeholder's submission.
+- Global Admins must also be project members to triage or view that project's submissions.
 - Developers can access assigned issues, update allowed fields, comment, and create their own work logs in projects where they hold that membership role.
 
 Each owning service enforces role and resource scope. work-management-service derives the caller identity from the validated JWT subject and checks project membership for project data. A `userId` in a membership request identifies the account to add; it is not used as the caller identity. Never trust a user ID supplied in a request body as proof of identity.

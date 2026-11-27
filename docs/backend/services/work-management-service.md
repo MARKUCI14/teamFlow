@@ -12,11 +12,11 @@ Project APIs are `GET /api/projects`, `POST /api/projects`, `GET /api/projects/{
 
 The service uses its own `work_management` PostgreSQL schema. Flyway creates the schema and tables; Hibernate validates the migration. Configure `WORK_DB_URL`, `WORK_DB_USERNAME`, `WORK_DB_PASSWORD`, and `WORK_DB_SCHEMA`. JWT validation uses `JWT_ISSUER` and `USER_SERVICE_URL` to retrieve JWKS. Health is public at `/actuator/health`; other endpoints require a valid bearer token.
 
-The project, membership, submission, issue, comment, and work-log API contracts are documented in the [REST API reference](../../api/rest-api.md). PMs triage submissions and create/assign issues. Developers update assigned issues and create their own work logs. Stakeholders can see permitted project progress and manage their own submissions.
+The project, membership, submission, issue, comment, and work-log API contracts are documented in the [REST API reference](../../api/rest-api.md). Stakeholders create and view their own submissions. Project PMs and project-member Admins can view all project submissions, triage them, and create linked issues. Issue assignees must be project developers.
 
 ## Events
 
-After committing workflow changes, publish versioned Kafka facts for submissions, issues, and work logs. `SubmissionCreated` is used to notify the project's PM; `IssueCreated` is used to notify the assigned developer. The notification-service consumes those facts. Use an outbox or a documented publish-after-commit retry and make consumers idempotent.
+After a submission transaction commits, work-management-service publishes the versioned `SubmissionCreated` fact to `submissions.events`, keyed by project ID. The producer uses the shared event envelope. Delivery failures are logged; an outbox/retry mechanism is a future reliability improvement. Issue and work-log event publishing are not part of this implementation.
 
 ## Data ownership
 
