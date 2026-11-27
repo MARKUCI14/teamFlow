@@ -10,13 +10,15 @@ RabbitMQ carries commands (“please perform this work”) to one handler. Kafka
 
 Queues are durable, messages persistent, publishers use confirms, and bounded retries lead to a dead-letter queue. Issue creation and status changes are synchronous REST commands to the service that owns the issue; Kafka announces the committed result.
 
-The notification-service consumes Kafka domain events and sends WebSocket updates. Targeted notification delivery does not use a separate RabbitMQ command.
+The notification-service is intended to consume Kafka domain events and send WebSocket updates. Targeted notification delivery does not use a separate RabbitMQ command.
 
 ## Kafka topics
 
+work-management-service publishes `SubmissionCreated` to `submissions.events` after the submission database transaction commits. The key is the project ID. Its versioned payload contains the submission ID, author ID, title, type, and initial status.
+
 | Topic | Key | Producer | Consumer groups |
 |---|---|---|---|
-| `submissions.events` | projectId | work-management-service | notifications |
+| `submissions.events` | projectId | work-management-service | notifications (planned) |
 | `issues.events` | projectId | work-management-service | notifications, reports |
 | `worklogs.events` | projectId | work-management-service | notifications, reports |
 | `reports.events` | projectId | report-service | notifications |

@@ -25,11 +25,17 @@ All project members can list and read their projects. A global Admin who is not 
 
 | Method | Endpoint | Purpose | Role |
 |---|---|---|---|
-| POST | `/api/projects/{id}/submissions` | Submit bug or suggestion | Project stakeholder / project PM |
-| GET | `/api/projects/{id}/submissions` | List project submissions | Project member; visibility policy applies |
-| GET | `/api/submissions/{id}` | View submission | Author / project PM / Admin |
-| PATCH | `/api/submissions/{id}` | Triage status or request clarification | Project PM / Admin |
-| POST | `/api/submissions/{id}/issues` | Create linked issue(s) and assign developer(s) | Project PM / Admin |
+| POST | `/api/projects/{id}/submissions` | Submit bug or suggestion | Project stakeholder |
+| GET | `/api/projects/{id}/submissions` | List permitted submissions (paginated) | Project stakeholder (own) / project PM or member Admin (all) |
+| GET | `/api/submissions/{id}` | View submission | Author / project PM or member Admin |
+| PATCH | `/api/submissions/{id}` | Triage status or request clarification | Project PM or member Admin |
+| POST | `/api/submissions/{id}/issues` | Create linked issues and assign developers | Project PM or member Admin |
+
+Submission creation accepts `{"title":"Login fails","description":"The form rejects a valid password.","type":"BUG"}`. `title` and `description` are required; `type` is `BUG` or `SUGGESTION`. New submissions have status `PENDING`. Stakeholders see only their own submissions; PMs and global Admins who are project members can see all submissions in that project.
+
+Triage accepts `{"status":"NEEDS_CLARIFICATION","clarificationMessage":"Which browser did you use?"}`. Statuses are `PENDING`, `NEEDS_CLARIFICATION`, `ACCEPTED`, and `REJECTED`; the clarification message is optional and is cleared when omitted from a later triage request.
+
+Linked issue creation accepts a non-empty `issues` array, for example `{"issues":[{"title":"Fix login validation","description":"Accept valid passwords.","assigneeId":"<developer-uuid>"}]}`. Each issue has a required title and description and an optional assignee. Any assignee must be a project member with the `DEVELOPER` role. The response is an array of created issues, each linked to the source submission.
 
 ## Issues and work logs
 
@@ -60,4 +66,4 @@ Registration and login accept `{"email":"person@example.com","password":"at-leas
 
 ## Workflow notifications
 
-After a submission is stored, work-management-service publishes `SubmissionCreated`; notification-service sends a private WebSocket notification to that project's PM. After the PM triages the submission and creates/assigns a linked issue, `IssueCreated` causes notification-service to send a private assignment notification to the assigned developer. Notifications are delivered to authenticated principals, never to a client-selected user ID.
+After a submission is stored, work-management-service publishes `SubmissionCreated` to Kafka for the project's notification flow. Notification delivery is handled by the notification-service as that consumer is implemented. Notifications are delivered to authenticated principals, never to a client-selected user ID.
